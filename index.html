@@ -8,12 +8,22 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #050505; color: #fff; padding-bottom: 70px; }
         
-        /* TELA DE LOGIN */
-        .login-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #050505; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; padding: 30px; }
+        /* TELA DE LOGIN E CADASTRO */
+        .login-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #050505; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; padding: 30px; overflow-y: auto; }
         .login-container { width: 100%; max-width: 360px; background-color: #111; padding: 30px; border-radius: 12px; border: 1px solid #222; text-align: center; }
         .login-logo { font-size: 24px; font-weight: bold; margin-bottom: 25px; color: #fff; letter-spacing: 1px; }
         .login-logo span { color: #E50914; }
         .login-error { color: #ff6b6b; font-size: 13px; margin-bottom: 15px; display: none; font-weight: bold; }
+        .login-success { color: #52b788; font-size: 13px; margin-bottom: 15px; display: none; font-weight: bold; }
+        .login-link { color: #aaa; font-size: 13px; margin-top: 20px; display: block; cursor: pointer; text-decoration: underline; }
+        .login-link:hover { color: #fff; }
+
+        /* Botão do Google */
+        .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background-color: #fff; color: #000; font-weight: bold; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; margin-top: 15px; transition: background 0.2s; }
+        .btn-google:hover { background-color: #e6e6e6; }
+        .btn-google img { width: 18px; height: 18px; }
+        .divider { color: #555; font-size: 12px; margin: 15px 0; display: flex; align-items: center; justify-content: center; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #222; margin: 0 10px; }
 
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #111; border-bottom: 1px solid #222; }
@@ -101,13 +111,14 @@
 <body>
 
     <div id="loginScreen" class="login-screen">
-        <div class="login-container">
+        <div class="login-container" id="box-login">
             <div class="login-logo">TF <span>AUTO</span></div>
-            <div id="loginError" class="login-error">Usuário ou senha incorretos!</div>
+            <div id="loginError" class="login-error">Erro ao autenticar! Verifique os dados.</div>
+            <div id="loginSuccess" class="login-success">Conta criada! Faça o login.</div>
             
             <div class="form-group" style="text-align: left;">
                 <label class="form-label">Usuário</label>
-                <input type="text" id="loginUser" class="input-field" placeholder="Seu usuário">
+                <input type="text" id="loginUser" class="input-field" placeholder="seu-email@gmail.com">
             </div>
             
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
@@ -116,12 +127,39 @@
             </div>
             
             <button class="btn-primary" style="width: 100%; margin: 0;" onclick="handleLogin()">Entrar no Sistema</button>
+            
+            <div class="divider">ou</div>
+            
+            <button class="btn-google" onclick="handleGoogleLogin()">
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google Logo">
+                Entrar com o Google
+            </button>
+            
+            <span class="login-link" onclick="toggleAuthMode('register')">Não tem uma conta? Cadastre-se</span>
+        </div>
+
+        <div class="login-container hidden" id="box-register">
+            <div class="login-logo">CRIAR <span>CONTA</span></div>
+            <div id="registerError" class="login-error">Preencha os campos corretamente!</div>
+            
+            <div class="form-group" style="text-align: left;">
+                <label class="form-label">E-mail de Usuário</label>
+                <input type="text" id="regUser" class="input-field" placeholder="Ex: novo-usuario@gmail.com">
+            </div>
+            
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label class="form-label">Defina sua Senha</label>
+                <input type="password" id="regPass" class="input-field" placeholder="Mínimo 6 caracteres">
+            </div>
+            
+            <button class="btn-primary" style="width: 100%; margin: 0; background-color: #52b788;" onclick="handleRegister()">Salvar Cadastro</button>
+            <span class="login-link" onclick="toggleAuthMode('login')">Já possui conta? Fazer Login</span>
         </div>
     </div>
 
     <div id="appScreen" class="hidden">
         <div class="header">
-            <span class="icon">☰</span>
+            <span class="icon">===</span>
             <div class="header-title" id="headerTitle">Dashboard</div>
             <span class="icon" onclick="handleLogout()">🚪</span>
         </div>
@@ -295,348 +333,148 @@
         </div>
     </div>
 
-    <script>
-        // Configuração de credenciais padrão
-        const AUTH_USER = "admin";
-        const AUTH_PASS = "1234";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        let vehicles = JSON.parse(localStorage.getItem('tf_vehicles')) || [
-            { id: 1, name: "Citroën C3 1.4", plate: "NZY-4E12", km: 112400, icon: "🚗" }
-        ];
-        let selectedVehicleIndex = parseInt(localStorage.getItem('tf_selected_vehicle')) || 0;
-        let fuelRecords = JSON.parse(localStorage.getItem('tf_fuel_records')) || [];
-        
+        // Configuração Oficial obtida do painel do seu projeto
+        const firebaseConfig = {
+            apiKey: "AIzaSyC_ZTv39fdlUxaYlkeCc_xd-uAMGE7jXSY",
+            authDomain: "tf-auto-bdd5b.firebaseapp.com",
+            projectId: "tf-auto-bdd5b",
+            storageBucket: "tf-auto-bdd5b.appspot.com",
+            messagingSenderId: "933309363226",
+            appId: "1:933309363226:web:55fab3d03a6172b5714da3"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // Variáveis de controle do estado local (isoladas por usuário)
+        let currentUser = null;
+        let vehicles = [];
+        let selectedVehicleIndex = 0;
+        let fuelRecords = [];
         let selectedFuelType = "Gasolina";
         let selectedTankStatus = "Cheio";
 
-        window.onload = function() {
-            // Verifica se o usuário já fez login anteriormente nesta sessão
-            if (sessionStorage.getItem("tf_authenticated") === "true") {
+        // Monitor de estado de autenticação ativo do Google/Firebase
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
                 document.getElementById("loginScreen").classList.add("hidden");
                 document.getElementById("appScreen").classList.remove("hidden");
-                renderAll();
+                await loadUserData();
+            } else {
+                currentUser = null;
+                document.getElementById("appScreen").classList.add("hidden");
+                document.getElementById("loginScreen").classList.remove("hidden");
             }
-        };
+        });
 
-        // Função de Login
-        function handleLogin() {
-            const user = document.getElementById("loginUser").value;
+        // Login Tradicional (E-mail e Senha)
+        window.handleLogin = async function() {
+            const email = document.getElementById("loginUser").value.trim();
             const pass = document.getElementById("loginPass").value;
             const errorDiv = document.getElementById("loginError");
 
-            if (user === AUTH_USER && pass === AUTH_PASS) {
+            try {
                 errorDiv.style.display = "none";
-                sessionStorage.setItem("tf_authenticated", "true");
-                document.getElementById("loginScreen").classList.add("hidden");
-                document.getElementById("appScreen").classList.remove("hidden");
-                renderAll();
-            } else {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                console.error(error);
+                errorDiv.innerText = "Usuário/Senha incorretos ou erro de conexão.";
                 errorDiv.style.display = "block";
             }
         }
 
-        // Função de Logout (Sair)
-        function handleLogout() {
-            sessionStorage.removeItem("tf_authenticated");
-            document.getElementById("loginUser").value = "";
-            document.getElementById("loginPass").value = "";
-            document.getElementById("appScreen").classList.add("hidden");
-            document.getElementById("loginScreen").classList.remove("hidden");
-        }
+        // Cadastro Tradicional (E-mail e Senha)
+        window.handleRegister = async function() {
+            const email = document.getElementById("regUser").value.trim();
+            const pass = document.getElementById("regPass").value;
+            const regError = document.getElementById("registerError");
 
-        // Funções do Formulário de Combustível
-        function calculateTotalFromPrice() {
-            const price = parseFloat(document.getElementById("f-price").value) || 0;
-            const liters = parseFloat(document.getElementById("f-liters").value) || 0;
-            if (price > 0 && liters > 0) {
-                document.getElementById("f-value").value = (price * liters).toFixed(2);
-            }
-        }
-
-        function calculateLitersFromTotal() {
-            const price = parseFloat(document.getElementById("f-price").value) || 0;
-            const total = parseFloat(document.getElementById("f-value").value) || 0;
-            if (price > 0 && total > 0) {
-                document.getElementById("f-liters").value = (total / price).toFixed(2);
-            }
-        }
-
-        function setFuelType(type) {
-            selectedFuelType = type;
-            document.querySelectorAll('#fuelForm .radio-group:nth-of-type(1) .radio-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById("type-" + type);
-            if(activeBtn) activeBtn.classList.add('active');
-        }
-
-        function setTankStatus(status) {
-            selectedTankStatus = status;
-            const btnCheio = document.getElementById("tank-Cheio");
-            const btnParcial = document.getElementById("tank-Parcial");
-            if(btnCheio && btnParcial) {
-                btnCheio.classList.remove('active');
-                btnParcial.classList.remove('active');
-                document.getElementById("tank-" + status).classList.add('active');
-            }
-        }
-
-        function toggleFuelForm(show) {
-            const form = document.getElementById("fuelForm");
-            const btn = document.getElementById("btnShowFuelForm");
-            
-            if(show) {
-                form.classList.remove("hidden");
-                btn.classList.add("hidden");
-                form.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                form.classList.add("hidden");
-                btn.classList.remove("hidden");
-            }
-        }
-
-        function toggleVehicleModal(show) {
-            document.getElementById("vehicleModal").style.display = show ? "flex" : "none";
-        }
-
-        // Navegação de Telas
-        function switchScreen(screenName) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
-            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('tab-active'));
-            
-            if(screenName === "Inicio") {
-                document.getElementById("sec-Inicio").classList.remove('hidden');
-                document.getElementById("tab-Inicio").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Dashboard";
-            } else if(screenName === "Combustível") {
-                document.getElementById("sec-Combustivel").classList.remove('hidden');
-                document.getElementById("tab-Combustivel").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Combustível";
-            } else if(screenName === "Manutenção") {
-                document.getElementById("sec-Manutencao").classList.remove('hidden');
-                document.getElementById("tab-Manutencao").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Manutenção";
-            } else if(screenName === "Financeiro") {
-                document.getElementById("sec-Financeiro").classList.remove('hidden');
-                document.getElementById("tab-Financeiro").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Financeiro";
-            }
-        }
-
-        function switchFuelTab(tabName) {
-            document.getElementById("fuel-Registros").classList.add('hidden');
-            document.getElementById("fuel-Graficos").classList.add('hidden');
-            document.getElementById("fuel-Resumo").classList.add('hidden');
-            document.getElementById("seg-reg").classList.remove('segment-active');
-            document.getElementById("seg-graf").classList.remove('segment-active');
-            document.getElementById("seg-res").classList.remove('segment-active');
-
-            if(tabName === "Registros") {
-                document.getElementById("fuel-Registros").classList.remove('hidden');
-                document.getElementById("seg-reg").classList.add('segment-active');
-            } else if(tabName === "Gráficos") {
-                document.getElementById("fuel-Graficos").classList.remove('hidden');
-                document.getElementById("seg-graf").classList.add('segment-active');
-            } else if(tabName === "Resumo") {
-                document.getElementById("fuel-Resumo").classList.remove('hidden');
-                document.getElementById("seg-res").classList.add('segment-active');
-            }
-        }
-
-        function selectVehicle(index) {
-            selectedVehicleIndex = index;
-            localStorage.setItem('tf_selected_vehicle', selectedVehicleIndex);
-            renderAll();
-        }
-
-        function saveVehicle() {
-            const name = document.getElementById("v-name").value;
-            const plate = document.getElementById("v-plate").value;
-            const km = document.getElementById("v-km").value;
-
-            if(!name || !plate || !km) {
-                alert("Por favor, preencha todos os campos do carro.");
+            if(pass.length < 6) {
+                regError.innerText = "A senha precisa ter no mínimo 6 dígitos!";
+                regError.style.display = "block";
                 return;
             }
 
-            vehicles.push({
-                id: Date.now(),
-                name: name,
-                plate: plate.toUpperCase(),
-                km: parseInt(km),
-                icon: "🚗"
+            try {
+                regError.style.display = "none";
+                await createUserWithEmailAndPassword(auth, email, pass);
+                document.getElementById("regUser").value = "";
+                document.getElementById("regPass").value = "";
+                toggleAuthMode('login');
+                document.getElementById("loginSuccess").style.display = "block";
+            } catch (error) {
+                console.error(error);
+                regError.innerText = "Erro ao cadastrar. E-mail inválido ou já existente.";
+                regError.style.display = "block";
+            }
+        }
+
+        // Login com o Google (Sign-In Popup)
+        window.handleGoogleLogin = async function() {
+            const errorDiv = document.getElementById("loginError");
+            try {
+                errorDiv.style.display = "none";
+                await signInWithPopup(auth, googleProvider);
+            } catch (error) {
+                console.error(error);
+                errorDiv.innerText = "Falha na autenticação com o Google.";
+                errorDiv.style.display = "block";
+            }
+        }
+
+        // Logout do Sistema
+        window.handleLogout = function() {
+            signOut(auth).then(() => {
+                document.getElementById("loginUser").value = "";
+                document.getElementById("loginPass").value = "";
+                switchScreen('Inicio');
             });
-            
-            selectedVehicleIndex = vehicles.length - 1;
-            document.getElementById("v-name").value = "";
-            document.getElementById("v-plate").value = "";
-            document.getElementById("v-km").value = "";
-            
-            toggleVehicleModal(false);
-            localStorage.setItem('tf_vehicles', JSON.stringify(vehicles));
-            localStorage.setItem('tf_selected_vehicle', selectedVehicleIndex);
-            renderAll();
         }
 
-        function saveFuel() {
-            const station = document.getElementById("f-station").value || "Posto Não Informado";
-            const liters = parseFloat(document.getElementById("f-liters").value);
-            const value = parseFloat(document.getElementById("f-value").value);
-            const km = parseFloat(document.getElementById("f-km").value);
+        // Carregar dados na nuvem filtrados exclusivamente pelo UID do usuário logado
+        async function loadUserData() {
+            if (!currentUser) return;
 
-            if(isNaN(liters) || isNaN(value) || isNaN(km)) {
-                alert("Preencha os valores de Litros, Total Pago e Km corretamente.");
-                return;
-            }
-
-            const activeCar = vehicles[selectedVehicleIndex];
-            const activeCarRecords = fuelRecords.filter(r => r.vehicleId === activeCar.id);
-            let kmRodado = 0;
-            let avgText = "---";
-
-            if (activeCarRecords.length > 0) {
-                const lastRecord = activeCarRecords[0];
-                if (km > lastRecord.km) {
-                    kmRodado = km - lastRecord.km;
-                    avgText = (kmRodado / liters).toFixed(2).replace(".", ",") + " km/l";
-                }
-            }
-
-            fuelRecords.unshift({
-                id: Date.now(),
-                vehicleId: activeCar.id,
-                date: new Date().toLocaleDateString('pt-BR'),
-                station: station,
-                liters: liters,
-                value: value,
-                km: km,
-                kmRodado: kmRodado,
-                fuelType: selectedFuelType,
-                tankStatus: selectedTankStatus,
-                avg: avgText
-            });
-
-            if (km > activeCar.km) {
-                activeCar.km = parseInt(km);
-            }
-
-            document.getElementById("f-station").value = "";
-            document.getElementById("f-price").value = "";
-            document.getElementById("f-liters").value = "";
-            document.getElementById("f-value").value = "";
-            document.getElementById("f-km").value = "";
-
-            toggleFuelForm(false);
-            localStorage.setItem('tf_fuel_records', JSON.stringify(fuelRecords));
-            localStorage.setItem('tf_vehicles', JSON.stringify(vehicles));
-            renderAll();
-        }
-
-        function deleteFuel(id) {
-            if(confirm("Remover este registro de abastecimento?")) {
-                fuelRecords = fuelRecords.filter(r => r.id !== id);
-                localStorage.setItem('tf_fuel_records', JSON.stringify(fuelRecords));
-                renderAll();
-            }
-        }
-
-        // Renderização da Interface
-        function renderAll() {
-            const activeCar = vehicles[selectedVehicleIndex];
-            if (!activeCar) return;
-
-            const activeFuelRecords = fuelRecords.filter(r => r.vehicleId === activeCar.id);
-
-            const totalValue = activeFuelRecords.reduce((sum, r) => sum + r.value, 0);
-            const totalLiters = activeFuelRecords.reduce((sum, r) => sum + r.liters, 0);
-            const totalKmRodado = activeFuelRecords.reduce((sum, r) => sum + r.kmRodado, 0);
-            const avgGeneral = totalLiters > 0 ? totalKmRodado / totalLiters : 0;
-            const priceAvg = totalLiters > 0 ? totalValue / totalLiters : 0;
-            const maxValue = Math.max(...activeFuelRecords.map(r => r.value), 1);
-
-            // Dashboard
-            document.getElementById("dashTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-            document.getElementById("dashTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
-            document.getElementById("dashTotalFuelPaid").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-            document.getElementById("dashAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
-
-            // Lista de Veículos
-            const vehiclesContainer = document.getElementById("vehiclesListContainer");
-            if(vehiclesContainer) {
-                vehiclesContainer.innerHTML = "";
-                vehicles.forEach((car, index) => {
-                    const isSelected = index === selectedVehicleIndex ? 'selected' : '';
-                    vehiclesContainer.innerHTML += `
-                        <div class="vehicle-card ${isSelected}" onclick="selectVehicle(${index})">
-                            <div class="car-icon-box">${car.icon}</div>
-                            <div class="vehicle-details">
-                                <div class="vehicle-name">${car.name}</div>
-                                <div class="vehicle-plate">Placa: ${car.plate}</div>
-                            </div>
-                            <div class="vehicle-km">${car.km.toLocaleString('pt-BR')} km</div>
-                        </div>
-                    `;
+            try {
+                // 1. Buscar Veículos do usuário
+                const qVehicles = query(collection(db, "vehicles"), where("userId", "==", currentUser.uid));
+                const snapVehicles = await getDocs(qVehicles);
+                vehicles = [];
+                snapVehicles.forEach(doc => {
+                    vehicles.push({ docId: doc.id, ...doc.data() });
                 });
-            }
 
-            // Resumo
-            document.getElementById("resTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-            document.getElementById("resTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
-            document.getElementById("resTotalKm").innerText = totalKmRodado + " km";
-            document.getElementById("resAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
-            document.getElementById("resPriceAvg").innerText = "R$ " + priceAvg.toFixed(2).replace(".", ",");
-
-            // Financeiro
-            document.getElementById("finTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-
-            // Lista de Abastecimentos
-            const listContainer = document.getElementById("fuelRecordsList");
-            if(listContainer) {
-                listContainer.innerHTML = "";
-                if(activeFuelRecords.length === 0) {
-                    listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#444; font-size:14px;">Nenhum abastecimento registrado.</div>`;
-                } else {
-                    activeFuelRecords.forEach(r => {
-                        listContainer.innerHTML += `
-                            <div class="record-card">
-                                <div class="record-main">
-                                    <div class="record-title">${r.date}</div>
-                                    <div class="record-sub">${r.station}</div>
-                                    <div class="record-sub">${r.liters.toFixed(1)} L • Painel: ${r.km.toLocaleString('pt-BR')} km</div>
-                                </div>
-                                <div class="record-value">R$ ${r.value.toFixed(2).replace(".", ",")}</div>
-                                <div class="record-right">
-                                    <span class="badge">${r.fuelType}</span>
-                                    <span class="badge">${r.tankStatus}</span>
-                                    <div class="record-sub" style="color: #52b788; font-weight: bold;">${r.avg}</div>
-                                    <button class="btn-delete" onclick="deleteFuel(${r.id})">Excluir</button>
-                                </div>
-                            </div>
-                        `;
-                    });
+                // Criar veículo padrão caso a conta seja nova e esteja vazia
+                if (vehicles.length === 0) {
+                    const defaultCar = {
+                        userId: currentUser.uid,
+                        name: "Citroën C3 1.4",
+                        plate: "NZY-4E12",
+                        km: 112400,
+                        icon: "🚗"
+                    };
+                    const docRef = await addDoc(collection(db, "vehicles"), defaultCar);
+                    vehicles.push({ docId: docRef.id, ...defaultCar });
                 }
-            }
 
-            // Gráficos
-            const chartContainer = document.getElementById("chartContainer");
-            if(chartContainer) {
-                chartContainer.innerHTML = "";
-                if(activeFuelRecords.length === 0) {
-                    chartContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#444; font-size:13px;">Sem dados gráficos.</div>`;
-                } else {
-                    activeFuelRecords.forEach(r => {
-                        const width = Math.max(12, (r.value / maxValue) * 100);
-                        chartContainer.innerHTML += `
-                            <div class="chart-row">
-                                <div class="chart-label">${r.date}</div>
-                                <div class="chart-track">
-                                    <div class="chart-bar" style="width: ${width}%"></div>
-                                </div>
-                                <div class="chart-val">R$ ${r.value.toFixed(0)}</div>
-                            </div>
-                        `;
-                    });
-                }
-            }
-        }
-    </script>
-</body>
-</html>
+                // Ajustar índice selecionado ativo
+                const savedIndex = parseInt(localStorage.getItem(`tf_sel_v_${currentUser.uid}`)) || 0;
+                selectedVehicleIndex = savedIndex < vehicles.length ? savedIndex : 0;
+
+                // 2. Buscar Registros de Abastecimento do usuário ativo
+                const activeCar = vehicles[selectedVehicleIndex];
+                const qFuel = query(
+                    collection(db, "fuelRecords"), 
+                    where("userId", "==", currentUser.uid),
+                    where("vehicleId", "==", activeCar.docId)
+                );
+                const
