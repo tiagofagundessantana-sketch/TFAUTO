@@ -477,4 +477,343 @@
                     where("userId", "==", currentUser.uid),
                     where("vehicleId", "==", activeCar.docId)
                 );
-                const
+                const snapFuel = await getDocs(qFuel);
+                fuelRecords = [];
+                snapFuel.forEach(doc => {
+                    fuelRecords.push({ docId: doc.id, ...doc.data() });
+                });
+
+                // Ordenar os registros localmente por timestamp decrescente
+                fuelRecords.sort((a, b) => b.timestamp - a.timestamp);
+
+                renderAll();
+            } catch (err) {
+                console.error("Erro ao carregar dados do Firestore: ", err);
+            }
+        }
+
+        // Adicionar novo veículo na nuvem
+        window.saveVehicle = async function() {
+            const name = document.getElementById("v-name").value.trim();
+            const plate = document.getElementById("v-plate").value.trim().toUpperCase();
+            const km = parseInt(document.getElementById("v-km").value);
+
+            if(!name || !plate || isNaN(km)) {
+                alert("Por favor, preencha todos os campos do carro.");
+                return;
+            }
+
+            const newCar = {
+                userId: currentUser.uid,
+                name: name,
+                plate: plate,
+                km: km,
+                icon: "🚗"
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, "vehicles"), newCar);
+                vehicles.push({ docId: docRef.id, ...newCar });
+                selectedVehicleIndex = vehicles.length - 1;
+                localStorage.setItem(`tf_sel_v_${currentUser.uid}`, selectedVehicleIndex);
+                
+                document.getElementById("v-name").value = "";
+                document.getElementById("v-plate").value = "";
+                document.getElementById("v-km").value = "";
+                toggleVehicleModal(false);
+                
+                await loadUserData();
+            } catch (e) {
+                console.error("Erro ao salvar veículo: ", e);
+            }
+        }
+
+        // Salvar abastecimento na nuvem atrelado ao carro e usuário ativo
+        window.saveFuel = async function() {
+            const station = document.getElementById("f-station").value.trim() || "Posto Não Informado";
+            const liters = parseFloat(document.getElementById("f-liters").value);
+            const value = parseFloat(document.getElementById("f-value").value);
+            const km = parseFloat(document.getElementById("f-km").value);
+
+            if(isNaN(liters) || isNaN(value) || isNaN(km)) {
+                alert("Preencha os valores de Litros, Total Pago e Km corretamente.");
+                return;
+            }
+
+            const activeCar = vehicles[selectedVehicleIndex];
+            let kmRodado = 0;
+            let avgText = "---";
+
+            if (fuelRecords.length > 0) {
+                const lastRecord = fuelRecords[0]; // Como está ordenado decrescente, o index 0 é o último
+                if (km > lastRecord.km) {
+                    kmRodado = km - lastRecord.km;
+                    avgText = (kmRodado / liters).toFixed(2).replace(".", ",") + " km/l";
+                }
+            }
+
+            const newRecord = {
+                userId: currentUser.uid,
+                vehicleId: activeCar.docId,
+                timestamp: Date.now(),
+                date: new Date().toLocaleDateString('pt-BR'),
+                station: station,
+                liters: liters,
+                value: value,
+                km: km,
+                kmRodado: kmRodado,
+                fuelType: selectedFuelType,
+                tankStatus: selectedTankStatus,
+                avg: avgText
+            };
+
+            try {
+                await addDoc(collection(db, "fuelRecords"), newRecord);
+
+                // Atualizar o odômetro do veículo caso a nova quilometragem seja superior
+                if (km > activeCar.km) {
+                    const carDocRef = doc(db, "vehicles", activeCar.docId);
+                    await updateDoc(carDocRef, { km: parseInt(km) });
+                }
+
+                document.getElementById("f-station").value = "";
+                document.getElementById("f-price").value = "";
+                document.getElementById("f-liters").value = "";
+                document.getElementById("f-value").value = "";
+                document.getElementById("f-km").value = "";
+
+                toggleFuelForm(false);
+                await loadUserData();
+            } catch (e) {
+                console.error("Erro ao salvar abastecimento: ", e);
+            }
+        }
+
+        // Deletar registro do Firestore
+        window.deleteFuel = async function(docId) {
+            if(confirm("Remover este registro de abastecimento permanentemente da nuvem?")) {
+                try {
+                    await deleteDoc(doc(db, "fuelRecords", docId));
+                    await loadUserData();
+                } catch (e) {
+                    console.error("Erro ao excluir documento: ", e);
+                }
+            }
+        }
+
+        // Mudar seleção de veículo ativo
+        window.selectVehicle = function(index) {
+            selectedVehicleIndex = index;
+            localStorage.setItem(`tf_sel_v_${currentUser.uid}`, selectedVehicleIndex);
+            loadUserData();
+        }
+
+        // Renderização da Interface Gráfica com os dados da Nuvem
+        function renderAll() {
+            const activeCar = vehicles[selectedVehicleIndex];
+            if (!activeCar) return;
+
+            const totalValue = fuelRecords.reduce((sum, r) => sum + r.value, 0);
+            const totalLiters = fuelRecords.reduce((sum, r) => sum + r.liters, 0);
+            const totalKmRodado = fuelRecords.reduce((sum, r) => sum + r.kmRodado, 0);
+            const avgGeneral = totalLiters > 0 ? totalKmRodado / totalLiters : 0;
+            const priceAvg = totalLiters > 0 ? totalValue / totalLiters : 0;
+            const maxValue = Math.max(...fuelRecords.map(r => r.value), 1);
+
+            // Dashboard Inicial
+            document.getElementById("dashTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+            document.getElementById("dashTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
+            document.getElementById("dashTotalFuelPaid").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+            document.getElementById("dashAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
+
+            // Listagem de Veículos
+            const vehiclesContainer = document.getElementById("vehiclesListContainer");
+            if(vehiclesContainer) {
+                vehiclesContainer.innerHTML = "";
+                vehicles.forEach((car, index) => {
+                    const isSelected = index === selectedVehicleIndex ? 'selected' : '';
+                    vehiclesContainer.innerHTML += `
+                        <div class="vehicle-card ${isSelected}" onclick="selectVehicle(${index})">
+                            <div class="car-icon-box">${car.icon}</div>
+                            <div class="vehicle-details">
+                                <div class="vehicle-name">${car.name}</div>
+                                <div class="vehicle-plate">Placa: ${car.plate}</div>
+                            </div>
+                            <div class="vehicle-km">${car.km.toLocaleString('pt-BR')} km</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Aba de Resumo
+            document.getElementById("resTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+            document.getElementById("resTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
+            document.getElementById("resTotalKm").innerText = totalKmRodado + " km";
+            document.getElementById("resAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
+            document.getElementById("resPriceAvg").innerText = "R$ " + priceAvg.toFixed(2).replace(".", ",");
+
+            // Financeiro Geral
+            document.getElementById("finTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+
+            // Lista de Abastecimentos Recentes
+            const listContainer = document.getElementById("fuelRecordsList");
+            if(listContainer) {
+                listContainer.innerHTML = "";
+                if(fuelRecords.length === 0) {
+                    listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#444; font-size:14px;">Nenhum abastecimento registrado na nuvem.</div>`;
+                } else {
+                    fuelRecords.forEach(r => {
+                        listContainer.innerHTML += `
+                            <div class="record-card">
+                                <div class="record-main">
+                                    <div class="record-title">${r.date}</div>
+                                    <div class="record-sub">${r.station}</div>
+                                    <div class="record-sub">${r.liters.toFixed(1)} L • Painel: ${r.km.toLocaleString('pt-BR')} km</div>
+                                </div>
+                                <div class="record-value">R$ ${r.value.toFixed(2).replace(".", ",")}</div>
+                                <div class="record-right">
+                                    <span class="badge">${r.fuelType}</span>
+                                    <span class="badge">${r.tankStatus}</span>
+                                    <div class="record-sub" style="color: #52b788; font-weight: bold;">${r.avg}</div>
+                                    <button class="btn-delete" onclick="deleteFuel('${r.docId}')">Excluir</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            // Gráficos de Eventos
+            const chartContainer = document.getElementById("chartContainer");
+            if(chartContainer) {
+                chartContainer.innerHTML = "";
+                if(fuelRecords.length === 0) {
+                    chartContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#444; font-size:13px;">Sem dados gráficos.</div>`;
+                } else {
+                    fuelRecords.forEach(r => {
+                        const width = Math.max(12, (r.value / maxValue) * 100);
+                        chartContainer.innerHTML += `
+                            <div class="chart-row">
+                                <div class="chart-label">${r.date}</div>
+                                <div class="chart-track">
+                                    <div class="chart-bar" style="width: ${width}%"></div>
+                                </div>
+                                <div class="chart-val">R$ ${r.value.toFixed(0)}</div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+        }
+
+        // Funções internas auxiliares globais
+        window.calculateTotalFromPrice = function() {
+            const price = parseFloat(document.getElementById("f-price").value) || 0;
+            const liters = parseFloat(document.getElementById("f-liters").value) || 0;
+            if (price > 0 && liters > 0) {
+                document.getElementById("f-value").value = (price * liters).toFixed(2);
+            }
+        }
+
+        window.calculateLitersFromTotal = function() {
+            const price = parseFloat(document.getElementById("f-price").value) || 0;
+            const total = parseFloat(document.getElementById("f-value").value) || 0;
+            if (price > 0 && total > 0) {
+                document.getElementById("f-liters").value = (total / price).toFixed(2);
+            }
+        }
+
+        window.setFuelType = function(type) {
+            selectedFuelType = type;
+            document.querySelectorAll('#fuelForm .radio-group:nth-of-type(1) .radio-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById("type-" + type);
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        window.setTankStatus = function(status) {
+            selectedTankStatus = status;
+            const btnCheio = document.getElementById("tank-Cheio");
+            const btnParcial = document.getElementById("tank-Parcial");
+            if(btnCheio && btnParcial) {
+                btnCheio.classList.remove('active');
+                btnParcial.classList.remove('active');
+                document.getElementById("tank-" + status).classList.add('active');
+            }
+        }
+
+        window.toggleFuelForm = function(show) {
+            const form = document.getElementById("fuelForm");
+            const btn = document.getElementById("btnShowFuelForm");
+            if(show) {
+                form.classList.remove("hidden");
+                btn.classList.add("hidden");
+                form.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                form.classList.add("hidden");
+                btn.classList.remove("hidden");
+            }
+        }
+
+        window.toggleVehicleModal = function(show) {
+            document.getElementById("vehicleModal").style.display = show ? "flex" : "none";
+        }
+
+        window.switchScreen = function(screenName) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('tab-active'));
+            
+            if(screenName === "Inicio") {
+                document.getElementById("sec-Inicio").classList.remove('hidden');
+                document.getElementById("tab-Inicio").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Dashboard";
+            } else if(screenName === "Combustível") {
+                document.getElementById("sec-Combustivel").classList.remove('hidden');
+                document.getElementById("tab-Combustivel").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Combustível";
+            } else if(screenName === "Manutenção") {
+                document.getElementById("sec-Manutencao").classList.remove('hidden');
+                document.getElementById("tab-Manutencao").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Manutenção";
+            } else if(screenName === "Financeiro") {
+                document.getElementById("sec-Financeiro").classList.remove('hidden');
+                document.getElementById("tab-Financeiro").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Financeiro";
+            }
+        }
+
+        window.switchFuelTab = function(tabName) {
+            document.getElementById("fuel-Registros").classList.add('hidden');
+            document.getElementById("fuel-Graficos").classList.add('hidden');
+            document.getElementById("fuel-Resumo").classList.add('hidden');
+            document.getElementById("seg-reg").classList.remove('segment-active');
+            document.getElementById("seg-graf").classList.remove('segment-active');
+            document.getElementById("seg-res").classList.remove('segment-active');
+
+            if(tabName === "Registros") {
+                document.getElementById("fuel-Registros").classList.remove('hidden');
+                document.getElementById("seg-reg").classList.add('segment-active');
+            } else if(tabName === "Gráficos") {
+                document.getElementById("fuel-Graficos").classList.remove('hidden');
+                document.getElementById("seg-graf").classList.add('segment-active');
+            } else if(tabName === "Resumo") {
+                document.getElementById("fuel-Resumo").classList.remove('hidden');
+                document.getElementById("seg-res").classList.add('segment-active');
+            }
+        }
+
+        window.toggleAuthMode = function(mode) {
+            document.getElementById("loginError").style.display = "none";
+            document.getElementById("loginSuccess").style.display = "none";
+            document.getElementById("registerError").style.display = "none";
+
+            if (mode === 'register') {
+                document.getElementById("box-login").classList.add("hidden");
+                document.getElementById("box-register").classList.remove("hidden");
+            } else {
+                document.getElementById("box-register").classList.add("hidden");
+                document.getElementById("box-login").classList.remove("hidden");
+            }
+        }
+    </script>
+</body>
+</html>
