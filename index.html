@@ -8,9 +8,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #050505; color: #fff; padding-bottom: 70px; }
         
+        /* TELA DE LOGIN */
+        .login-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #050505; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; padding: 30px; }
+        .login-container { width: 100%; max-width: 360px; background-color: #111; padding: 30px; border-radius: 12px; border: 1px solid #222; text-align: center; }
+        .login-logo { font-size: 24px; font-weight: bold; margin-bottom: 25px; color: #fff; letter-spacing: 1px; }
+        .login-logo span { color: #E50914; }
+        .login-error { color: #ff6b6b; font-size: 13px; margin-bottom: 15px; display: none; font-weight: bold; }
+
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #111; border-bottom: 1px solid #222; }
         .header-title { font-size: 18px; font-weight: bold; color: #fff; }
+        .header-title span { color: #E50914; }
         .icon { font-size: 20px; cursor: pointer; }
 
         /* Hero Card */
@@ -92,11 +100,30 @@
 </head>
 <body>
 
-    <div id="appScreen">
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-logo">TF <span>AUTO</span></div>
+            <div id="loginError" class="login-error">Usuário ou senha incorretos!</div>
+            
+            <div class="form-group" style="text-align: left;">
+                <label class="form-label">Usuário</label>
+                <input type="text" id="loginUser" class="input-field" placeholder="Seu usuário">
+            </div>
+            
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label class="form-label">Senha</label>
+                <input type="password" id="loginPass" class="input-field" placeholder="Sua senha">
+            </div>
+            
+            <button class="btn-primary" style="width: 100%; margin: 0;" onclick="handleLogin()">Entrar no Sistema</button>
+        </div>
+    </div>
+
+    <div id="appScreen" class="hidden">
         <div class="header">
             <span class="icon">☰</span>
             <div class="header-title" id="headerTitle">Dashboard</div>
-            <span class="icon">🔔</span>
+            <span class="icon" onclick="handleLogout()">🚪</span>
         </div>
 
         <div id="sec-Inicio" class="view-section">
@@ -260,7 +287,7 @@
     <div class="modal" id="vehicleModal">
         <div class="modal-card">
             <div class="form-title">Adicionar Novo Veículo</div>
-            <input type="text" id="v-name" class="input-field" placeholder="Modelo. Ex: Citroën C3 1.4" style="margin-bottom: 10px;">
+            <input type="text" id="v-name" class="input-field" placeholder="Modelo. Ex: Citroën C3" style="margin-bottom: 10px;">
             <input type="text" id="v-plate" class="input-field" placeholder="Placa. Ex: NZY-4E12" style="margin-bottom: 10px;">
             <input type="number" id="v-km" class="input-field" placeholder="Odômetro Inicial (Km)" style="margin-bottom: 15px;">
             <button class="btn-primary" style="width:100%; margin: 0 0 10px 0;" onclick="saveVehicle()">Criar Carro</button>
@@ -269,7 +296,10 @@
     </div>
 
     <script>
-        // Inicialização de Variáveis e BD Local
+        // Configuração de credenciais padrão
+        const AUTH_USER = "admin";
+        const AUTH_PASS = "1234";
+
         let vehicles = JSON.parse(localStorage.getItem('tf_vehicles')) || [
             { id: 1, name: "Citroën C3 1.4", plate: "NZY-4E12", km: 112400, icon: "🚗" }
         ];
@@ -280,8 +310,39 @@
         let selectedTankStatus = "Cheio";
 
         window.onload = function() {
-            renderAll();
+            // Verifica se o usuário já fez login anteriormente nesta sessão
+            if (sessionStorage.getItem("tf_authenticated") === "true") {
+                document.getElementById("loginScreen").classList.add("hidden");
+                document.getElementById("appScreen").classList.remove("hidden");
+                renderAll();
+            }
         };
+
+        // Função de Login
+        function handleLogin() {
+            const user = document.getElementById("loginUser").value;
+            const pass = document.getElementById("loginPass").value;
+            const errorDiv = document.getElementById("loginError");
+
+            if (user === AUTH_USER && pass === AUTH_PASS) {
+                errorDiv.style.display = "none";
+                sessionStorage.setItem("tf_authenticated", "true");
+                document.getElementById("loginScreen").classList.add("hidden");
+                document.getElementById("appScreen").classList.remove("hidden");
+                renderAll();
+            } else {
+                errorDiv.style.display = "block";
+            }
+        }
+
+        // Função de Logout (Sair)
+        function handleLogout() {
+            sessionStorage.removeItem("tf_authenticated");
+            document.getElementById("loginUser").value = "";
+            document.getElementById("loginPass").value = "";
+            document.getElementById("appScreen").classList.add("hidden");
+            document.getElementById("loginScreen").classList.remove("hidden");
+        }
 
         // Funções do Formulário de Combustível
         function calculateTotalFromPrice() {
@@ -319,7 +380,6 @@
         }
 
         function toggleFuelForm(show) {
-            console.log("toggleFuelForm acionado com valor:", show);
             const form = document.getElementById("fuelForm");
             const btn = document.getElementById("btnShowFuelForm");
             
@@ -492,7 +552,7 @@
             const priceAvg = totalLiters > 0 ? totalValue / totalLiters : 0;
             const maxValue = Math.max(...activeFuelRecords.map(r => r.value), 1);
 
-            // Atualiza Dashboard
+            // Dashboard
             document.getElementById("dashTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
             document.getElementById("dashTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
             document.getElementById("dashTotalFuelPaid").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
@@ -517,17 +577,17 @@
                 });
             }
 
-            // Atualiza Aba Resumo
+            // Resumo
             document.getElementById("resTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
             document.getElementById("resTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
             document.getElementById("resTotalKm").innerText = totalKmRodado + " km";
             document.getElementById("resAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
             document.getElementById("resPriceAvg").innerText = "R$ " + priceAvg.toFixed(2).replace(".", ",");
 
-            // Atualiza Aba Financeiro
+            // Financeiro
             document.getElementById("finTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
 
-            // Lista de Abastecimentos Cadastrados
+            // Lista de Abastecimentos
             const listContainer = document.getElementById("fuelRecordsList");
             if(listContainer) {
                 listContainer.innerHTML = "";
@@ -555,7 +615,7 @@
                 }
             }
 
-            // Atualiza Gráficos Básicos
+            // Gráficos
             const chartContainer = document.getElementById("chartContainer");
             if(chartContainer) {
                 chartContainer.innerHTML = "";
