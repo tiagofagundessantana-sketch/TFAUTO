@@ -3,22 +3,580 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE DE CONEXÃO</title>
+    <title>TF AUTO</title>
     <style>
-        body { background-color: #050505; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
-        button { background: #E50914; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #050505; color: #fff; padding-bottom: 70px; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #111; border-bottom: 1px solid #222; }
+        .header-title { font-size: 18px; font-weight: bold; color: #fff; }
+        .icon { font-size: 20px; cursor: pointer; }
+
+        /* Hero Card */
+        .hero-card { background: linear-gradient(135deg, #111 0%, #1a1a1a 100%); padding: 20px; margin: 15px; border-radius: 12px; border: 1px solid #222; }
+        .hero-label { font-size: 11px; color: #E50914; font-weight: bold; letter-spacing: 1px; }
+        .hero-money { font-size: 32px; font-weight: bold; margin: 5px 0; }
+
+        /* Grid Dashboard */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; margin-bottom: 15px; }
+        .dash-box { background-color: #111; padding: 15px; border-radius: 8px; border: 1px solid #222; }
+        .dash-box-title { font-size: 10px; color: #888; font-weight: bold; margin-bottom: 5px; }
+        .dash-box-value { font-size: 16px; font-weight: bold; }
+        .dash-box-detail { font-size: 11px; color: #555; margin-top: 3px; }
+
+        /* Vehicle Summary */
+        .section-title { font-size: 14px; font-weight: bold; padding: 15px 15px 5px 15px; color: #888; }
+        .vehicle-card { display: flex; align-items: center; background-color: #111; margin: 10px 15px; padding: 15px; border-radius: 8px; border: 1px solid #222; }
+        .vehicle-card.selected { border-color: #E50914; background-color: #130a0a; }
+        .car-icon-box { font-size: 24px; margin-right: 15px; background-color: #222; padding: 10px; border-radius: 50%; }
+        .vehicle-details { flex: 1; }
+        .vehicle-name { font-size: 16px; font-weight: bold; }
+        .vehicle-plate { font-size: 12px; color: #666; }
+        .vehicle-km { font-size: 16px; font-weight: bold; color: #ff6b6b; }
+
+        /* Segments */
+        .segments { display: flex; justify-content: space-around; background-color: #111; margin: 15px; border-radius: 8px; padding: 4px; }
+        .segment-btn { flex: 1; text-align: center; padding: 8px; font-size: 12px; font-weight: bold; color: #666; cursor: pointer; border-radius: 6px; }
+        .segment-active { background-color: #222; color: #fff; }
+
+        /* Formulário de Abastecimento */
+        .form-card { background-color: #111; margin: 15px; padding: 20px; border-radius: 12px; border: 1px solid #222; }
+        .form-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #fff; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: 6px; }
+        .input-field { width: 100%; background-color: #1a1a1a; border: 1px solid #333; padding: 12px; color: #fff; border-radius: 8px; font-size: 14px; }
+        .input-field:focus { border-color: #E50914; outline: none; }
+        
+        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .radio-group { display: flex; gap: 8px; }
+        .radio-btn { flex: 1; text-align: center; background-color: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; color: #aaa; cursor: pointer; }
+        .radio-btn.active { background-color: #222; border-color: #E50914; color: #fff; }
+
+        /* Botões */
+        .btn-primary { background-color: #E50914; color: #fff; text-align: center; padding: 14px; margin: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: block; width: calc(100% - 30px); font-size: 14px; }
+        .form-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        .btn-form { flex: 1; padding: 14px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; }
+        .btn-cancel { background-color: #222; color: #aaa; }
+        .btn-save { background-color: #52b788; color: #fff; }
+
+        /* Cards de Registros */
+        .record-card { background-color: #111; margin: 10px 15px; padding: 15px; border-radius: 8px; border: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .record-main { flex: 1; }
+        .record-title { font-size: 14px; font-weight: bold; }
+        .record-sub { font-size: 12px; color: #666; margin-top: 2px; }
+        .record-value { font-size: 16px; font-weight: bold; color: #52b788; margin: 0 10px; }
+        .record-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .badge { background-color: #222; color: #aaa; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px; border: 1px solid #333; }
+        .btn-delete { color: #ff6b6b; font-size: 11px; margin-top: 6px; cursor: pointer; background: none; border: none; }
+
+        /* Bottom Navigation Bar */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background-color: #111; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: #555; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .tab-active { color: #E50914; }
+        .plus-btn { width: 44px; height: 44px; background-color: #E50914; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 24px; font-weight: bold; cursor: pointer; border: none; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 200; padding: 20px; }
+        .modal-card { background-color: #111; width: 100%; max-width: 400px; padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        
+        /* Graficos */
+        .chart-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .chart-label { width: 70px; font-size: 12px; color: #888; }
+        .chart-track { flex: 1; background-color: #222; height: 12px; border-radius: 6px; margin: 0 10px; overflow: hidden; }
+        .chart-bar { background-color: #E50914; height: 100%; border-radius: 6px; }
+        .chart-val { font-size: 12px; font-weight: bold; width: 60px; text-align: right; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <h1>TF AUTO - TESTE DE ATUALIZAÇÃO</h1>
-    <p>Se você estiver vendo esta tela preta com este texto, o Git funcionou!</p>
-    
-    <button onclick="alert('O JavaScript está funcionando perfeitamente!')">TESTAR BOTÃO</button>
+    <div id="appScreen">
+        <div class="header">
+            <span class="icon">☰</span>
+            <div class="header-title" id="headerTitle">Dashboard</div>
+            <span class="icon">🔔</span>
+        </div>
+
+        <div id="sec-Inicio" class="view-section">
+            <div class="hero-card">
+                <div class="hero-label">GASTO TOTAL (MÊS)</div>
+                <div class="hero-money" id="dashTotalValue">R$ 0,00</div>
+            </div>
+
+            <div class="grid">
+                <div class="dash-box">
+                    <div class="dash-box-title">COMBUSTÍVEL (MÊS)</div>
+                    <div class="dash-box-value" id="dashTotalLiters">0,0 L</div>
+                    <div class="dash-box-detail" id="dashTotalFuelPaid">R$ 0,00</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title">CONSUMO MÉDIO</div>
+                    <div class="dash-box-value" id="dashAvgGeneral">0,0 km/l</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title" style="color: #52b788;">PRÓXIMA TROCA DE ÓLEO</div>
+                    <div class="dash-box-value">--- km</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title" style="color: #ff6b6b;">MANUTENÇÕES</div>
+                    <div class="dash-box-value">0</div>
+                </div>
+            </div>
+
+            <div class="section-title">Seus Veículos</div>
+            <div id="vehiclesListContainer"></div>
+        </div>
+
+        <div id="sec-Combustivel" class="view-section hidden">
+            <div class="segments">
+                <div class="segment-btn segment-active" id="seg-reg" onclick="switchFuelTab('Registros')">REGISTROS</div>
+                <div class="segment-btn" id="seg-graf" onclick="switchFuelTab('Gráficos')">GRÁFICOS</div>
+                <div class="segment-btn" id="seg-res" onclick="switchFuelTab('Resumo')">RESUMO</div>
+            </div>
+
+            <div id="fuel-Registros">
+                <button class="btn-primary" id="btnShowFuelForm" onclick="toggleFuelForm(true)">+ Novo Abastecimento</button>
+                
+                <div class="form-card hidden" id="fuelForm">
+                    <div class="form-title">⛽ Detalhes do Abastecimento</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Posto / Local</label>
+                        <input type="text" id="f-station" class="input-field" placeholder="Ex: Posto Shell Centenário">
+                    </div>
+
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label class="form-label">Preço por Litro (R$)</label>
+                            <input type="number" id="f-price" class="input-field" placeholder="Ex: 5.89" step="any" oninput="calculateTotalFromPrice()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Litros Abastecidos</label>
+                            <input type="number" id="f-liters" class="input-field" placeholder="Ex: 40" step="any" oninput="calculateTotalFromPrice()">
+                        </div>
+                    </div>
+
+                    <div class="row-grid">
+                        <div class="form-group">
+                            <label class="form-label">Valor Total Pago (R$)</label>
+                            <input type="number" id="f-value" class="input-field" placeholder="Ex: 235.60" step="any" oninput="calculateLitersFromTotal()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Odômetro Atual (Km)</label>
+                            <input type="number" id="f-km" class="input-field" placeholder="Ex: 112960" step="any">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Combustível</label>
+                        <div class="radio-group">
+                            <div class="radio-btn active" id="type-Gasolina" onclick="setFuelType('Gasolina')">Gasolina</div>
+                            <div class="radio-btn" id="type-Etanol" onclick="setFuelType('Etanol')">Etanol</div>
+                            <div class="radio-btn" id="type-Diesel" onclick="setFuelType('Diesel')">Diesel</div>
+                            <div class="radio-btn" id="type-GNV" onclick="setFuelType('GNV')">GNV</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Condição do Tanque</label>
+                        <div class="radio-group">
+                            <div class="radio-btn active" id="tank-Cheio" onclick="setTankStatus('Cheio')">Encheu o Tanque</div>
+                            <div class="radio-btn" id="tank-Parcial" onclick="setTankStatus('Parcial')">Parcial / Reserva</div>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button class="btn-form btn-cancel" onclick="toggleFuelForm(false)">Cancelar</button>
+                        <button class="btn-form btn-save" onclick="saveFuel()">Confirmar e Salvar</button>
+                    </div>
+                </div>
+
+                <div id="fuelRecordsList"></div>
+            </div>
+
+            <div id="fuel-Graficos" class="hidden">
+                <div class="form-card">
+                    <div class="form-title">Histórico de Gastos por Evento</div>
+                    <div id="chartContainer"></div>
+                </div>
+            </div>
+
+            <div id="fuel-Resumo" class="hidden">
+                <div class="hero-card">
+                    <div class="hero-label">BALANÇO ACUMULADO</div>
+                    <div class="hero-money" id="resTotalValue">R$ 0,00</div>
+                </div>
+                <div class="grid">
+                    <div class="dash-box">
+                        <div class="dash-box-title">LITROS TOTAIS</div>
+                        <div class="dash-box-value" id="resTotalLiters">0.0 L</div>
+                    </div>
+                    <div class="dash-box">
+                        <div class="dash-box-title">KM TOTAL</div>
+                        <div class="dash-box-value" id="resTotalKm">0 km</div>
+                    </div>
+                    <div class="dash-box">
+                        <div class="dash-box-title">MÉDIA CALCULADA</div>
+                        <div class="dash-box-value" id="resAvgGeneral">0.0 km/l</div>
+                    </div>
+                    <div class="dash-box">
+                        <div class="dash-box-title">PREÇO MÉDIO / L</div>
+                        <div class="dash-box-value" id="resPriceAvg">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-Manutencao" class="view-section hidden">
+            <div style="text-align:center; padding:40px; color:#444;">Nenhuma manutenção registrada.</div>
+        </div>
+
+        <div id="sec-Financeiro" class="view-section hidden">
+            <div class="hero-card">
+                <div class="hero-label">DESPESAS ACUMULADAS</div>
+                <div style="color: #ff6b6b; font-size: 32px; font-weight: bold;" id="finTotalValue">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="bottom-bar">
+            <div class="tab-item tab-active" id="tab-Inicio" onclick="switchScreen('Inicio')">
+                <span>🏠</span><span>Início</span>
+            </div>
+            <div class="tab-item" id="tab-Combustivel" onclick="switchScreen('Combustível')">
+                <span>⛽</span><span>Combustível</span>
+            </div>
+            <button class="plus-btn" onclick="toggleVehicleModal(true)">+</button>
+            <div class="tab-item" id="tab-Manutencao" onclick="switchScreen('Manutenção')">
+                <span>🔧</span><span>Manutenção</span>
+            </div>
+            <div class="tab-item" id="tab-Financeiro" onclick="switchScreen('Financeiro')">
+                <span>💰</span><span>Financeiro</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="vehicleModal">
+        <div class="modal-card">
+            <div class="form-title">Adicionar Novo Veículo</div>
+            <input type="text" id="v-name" class="input-field" placeholder="Modelo. Ex: Citroën C3 1.4" style="margin-bottom: 10px;">
+            <input type="text" id="v-plate" class="input-field" placeholder="Placa. Ex: NZY-4E12" style="margin-bottom: 10px;">
+            <input type="number" id="v-km" class="input-field" placeholder="Odômetro Inicial (Km)" style="margin-bottom: 15px;">
+            <button class="btn-primary" style="width:100%; margin: 0 0 10px 0;" onclick="saveVehicle()">Criar Carro</button>
+            <button class="btn-form btn-cancel" style="width:100%;" onclick="toggleVehicleModal(false)">Voltar</button>
+        </div>
+    </div>
 
     <script>
-        // Força um aviso assim que a página carrega
-        alert("Código Novo Carregado com Sucesso!");
+        // Inicialização de Variáveis e BD Local
+        let vehicles = JSON.parse(localStorage.getItem('tf_vehicles')) || [
+            { id: 1, name: "Citroën C3 1.4", plate: "NZY-4E12", km: 112400, icon: "🚗" }
+        ];
+        let selectedVehicleIndex = parseInt(localStorage.getItem('tf_selected_vehicle')) || 0;
+        let fuelRecords = JSON.parse(localStorage.getItem('tf_fuel_records')) || [];
+        
+        let selectedFuelType = "Gasolina";
+        let selectedTankStatus = "Cheio";
+
+        window.onload = function() {
+            renderAll();
+        };
+
+        // Funções do Formulário de Combustível
+        function calculateTotalFromPrice() {
+            const price = parseFloat(document.getElementById("f-price").value) || 0;
+            const liters = parseFloat(document.getElementById("f-liters").value) || 0;
+            if (price > 0 && liters > 0) {
+                document.getElementById("f-value").value = (price * liters).toFixed(2);
+            }
+        }
+
+        function calculateLitersFromTotal() {
+            const price = parseFloat(document.getElementById("f-price").value) || 0;
+            const total = parseFloat(document.getElementById("f-value").value) || 0;
+            if (price > 0 && total > 0) {
+                document.getElementById("f-liters").value = (total / price).toFixed(2);
+            }
+        }
+
+        function setFuelType(type) {
+            selectedFuelType = type;
+            document.querySelectorAll('#fuelForm .radio-group:nth-of-type(1) .radio-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById("type-" + type);
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        function setTankStatus(status) {
+            selectedTankStatus = status;
+            const btnCheio = document.getElementById("tank-Cheio");
+            const btnParcial = document.getElementById("tank-Parcial");
+            if(btnCheio && btnParcial) {
+                btnCheio.classList.remove('active');
+                btnParcial.classList.remove('active');
+                document.getElementById("tank-" + status).classList.add('active');
+            }
+        }
+
+        function toggleFuelForm(show) {
+            console.log("toggleFuelForm acionado com valor:", show);
+            const form = document.getElementById("fuelForm");
+            const btn = document.getElementById("btnShowFuelForm");
+            
+            if(show) {
+                form.classList.remove("hidden");
+                btn.classList.add("hidden");
+                form.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                form.classList.add("hidden");
+                btn.classList.remove("hidden");
+            }
+        }
+
+        function toggleVehicleModal(show) {
+            document.getElementById("vehicleModal").style.display = show ? "flex" : "none";
+        }
+
+        // Navegação de Telas
+        function switchScreen(screenName) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('tab-active'));
+            
+            if(screenName === "Inicio") {
+                document.getElementById("sec-Inicio").classList.remove('hidden');
+                document.getElementById("tab-Inicio").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Dashboard";
+            } else if(screenName === "Combustível") {
+                document.getElementById("sec-Combustivel").classList.remove('hidden');
+                document.getElementById("tab-Combustivel").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Combustível";
+            } else if(screenName === "Manutenção") {
+                document.getElementById("sec-Manutencao").classList.remove('hidden');
+                document.getElementById("tab-Manutencao").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Manutenção";
+            } else if(screenName === "Financeiro") {
+                document.getElementById("sec-Financeiro").classList.remove('hidden');
+                document.getElementById("tab-Financeiro").classList.add('tab-active');
+                document.getElementById("headerTitle").innerText = "Financeiro";
+            }
+        }
+
+        function switchFuelTab(tabName) {
+            document.getElementById("fuel-Registros").classList.add('hidden');
+            document.getElementById("fuel-Graficos").classList.add('hidden');
+            document.getElementById("fuel-Resumo").classList.add('hidden');
+            document.getElementById("seg-reg").classList.remove('segment-active');
+            document.getElementById("seg-graf").classList.remove('segment-active');
+            document.getElementById("seg-res").classList.remove('segment-active');
+
+            if(tabName === "Registros") {
+                document.getElementById("fuel-Registros").classList.remove('hidden');
+                document.getElementById("seg-reg").classList.add('segment-active');
+            } else if(tabName === "Gráficos") {
+                document.getElementById("fuel-Graficos").classList.remove('hidden');
+                document.getElementById("seg-graf").classList.add('segment-active');
+            } else if(tabName === "Resumo") {
+                document.getElementById("fuel-Resumo").classList.remove('hidden');
+                document.getElementById("seg-res").classList.add('segment-active');
+            }
+        }
+
+        function selectVehicle(index) {
+            selectedVehicleIndex = index;
+            localStorage.setItem('tf_selected_vehicle', selectedVehicleIndex);
+            renderAll();
+        }
+
+        function saveVehicle() {
+            const name = document.getElementById("v-name").value;
+            const plate = document.getElementById("v-plate").value;
+            const km = document.getElementById("v-km").value;
+
+            if(!name || !plate || !km) {
+                alert("Por favor, preencha todos os campos do carro.");
+                return;
+            }
+
+            vehicles.push({
+                id: Date.now(),
+                name: name,
+                plate: plate.toUpperCase(),
+                km: parseInt(km),
+                icon: "🚗"
+            });
+            
+            selectedVehicleIndex = vehicles.length - 1;
+            document.getElementById("v-name").value = "";
+            document.getElementById("v-plate").value = "";
+            document.getElementById("v-km").value = "";
+            
+            toggleVehicleModal(false);
+            localStorage.setItem('tf_vehicles', JSON.stringify(vehicles));
+            localStorage.setItem('tf_selected_vehicle', selectedVehicleIndex);
+            renderAll();
+        }
+
+        function saveFuel() {
+            const station = document.getElementById("f-station").value || "Posto Não Informado";
+            const liters = parseFloat(document.getElementById("f-liters").value);
+            const value = parseFloat(document.getElementById("f-value").value);
+            const km = parseFloat(document.getElementById("f-km").value);
+
+            if(isNaN(liters) || isNaN(value) || isNaN(km)) {
+                alert("Preencha os valores de Litros, Total Pago e Km corretamente.");
+                return;
+            }
+
+            const activeCar = vehicles[selectedVehicleIndex];
+            const activeCarRecords = fuelRecords.filter(r => r.vehicleId === activeCar.id);
+            let kmRodado = 0;
+            let avgText = "---";
+
+            if (activeCarRecords.length > 0) {
+                const lastRecord = activeCarRecords[0];
+                if (km > lastRecord.km) {
+                    kmRodado = km - lastRecord.km;
+                    avgText = (kmRodado / liters).toFixed(2).replace(".", ",") + " km/l";
+                }
+            }
+
+            fuelRecords.unshift({
+                id: Date.now(),
+                vehicleId: activeCar.id,
+                date: new Date().toLocaleDateString('pt-BR'),
+                station: station,
+                liters: liters,
+                value: value,
+                km: km,
+                kmRodado: kmRodado,
+                fuelType: selectedFuelType,
+                tankStatus: selectedTankStatus,
+                avg: avgText
+            });
+
+            if (km > activeCar.km) {
+                activeCar.km = parseInt(km);
+            }
+
+            document.getElementById("f-station").value = "";
+            document.getElementById("f-price").value = "";
+            document.getElementById("f-liters").value = "";
+            document.getElementById("f-value").value = "";
+            document.getElementById("f-km").value = "";
+
+            toggleFuelForm(false);
+            localStorage.setItem('tf_fuel_records', JSON.stringify(fuelRecords));
+            localStorage.setItem('tf_vehicles', JSON.stringify(vehicles));
+            renderAll();
+        }
+
+        function deleteFuel(id) {
+            if(confirm("Remover este registro de abastecimento?")) {
+                fuelRecords = fuelRecords.filter(r => r.id !== id);
+                localStorage.setItem('tf_fuel_records', JSON.stringify(fuelRecords));
+                renderAll();
+            }
+        }
+
+        // Renderização da Interface
+        function renderAll() {
+            const activeCar = vehicles[selectedVehicleIndex];
+            if (!activeCar) return;
+
+            const activeFuelRecords = fuelRecords.filter(r => r.vehicleId === activeCar.id);
+
+            const totalValue = activeFuelRecords.reduce((sum, r) => sum + r.value, 0);
+            const totalLiters = activeFuelRecords.reduce((sum, r) => sum + r.liters, 0);
+            const totalKmRodado = activeFuelRecords.reduce((sum, r) => sum + r.kmRodado, 0);
+            const avgGeneral = totalLiters > 0 ? totalKmRodado / totalLiters : 0;
+            const priceAvg = totalLiters > 0 ? totalValue / totalLiters : 0;
+            const maxValue = Math.max(...activeFuelRecords.map(r => r.value), 1);
+
+            // Atualiza Dashboard
+            document.getElementById("dashTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+            document.getElementById("dashTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
+            document.getElementById("dashTotalFuelPaid").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+            document.getElementById("dashAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
+
+            // Lista de Veículos
+            const vehiclesContainer = document.getElementById("vehiclesListContainer");
+            if(vehiclesContainer) {
+                vehiclesContainer.innerHTML = "";
+                vehicles.forEach((car, index) => {
+                    const isSelected = index === selectedVehicleIndex ? 'selected' : '';
+                    vehiclesContainer.innerHTML += `
+                        <div class="vehicle-card ${isSelected}" onclick="selectVehicle(${index})">
+                            <div class="car-icon-box">${car.icon}</div>
+                            <div class="vehicle-details">
+                                <div class="vehicle-name">${car.name}</div>
+                                <div class="vehicle-plate">Placa: ${car.plate}</div>
+                            </div>
+                            <div class="vehicle-km">${car.km.toLocaleString('pt-BR')} km</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Atualiza Aba Resumo
+            document.getElementById("resTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+            document.getElementById("resTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
+            document.getElementById("resTotalKm").innerText = totalKmRodado + " km";
+            document.getElementById("resAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
+            document.getElementById("resPriceAvg").innerText = "R$ " + priceAvg.toFixed(2).replace(".", ",");
+
+            // Atualiza Aba Financeiro
+            document.getElementById("finTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
+
+            // Lista de Abastecimentos Cadastrados
+            const listContainer = document.getElementById("fuelRecordsList");
+            if(listContainer) {
+                listContainer.innerHTML = "";
+                if(activeFuelRecords.length === 0) {
+                    listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#444; font-size:14px;">Nenhum abastecimento registrado.</div>`;
+                } else {
+                    activeFuelRecords.forEach(r => {
+                        listContainer.innerHTML += `
+                            <div class="record-card">
+                                <div class="record-main">
+                                    <div class="record-title">${r.date}</div>
+                                    <div class="record-sub">${r.station}</div>
+                                    <div class="record-sub">${r.liters.toFixed(1)} L • Painel: ${r.km.toLocaleString('pt-BR')} km</div>
+                                </div>
+                                <div class="record-value">R$ ${r.value.toFixed(2).replace(".", ",")}</div>
+                                <div class="record-right">
+                                    <span class="badge">${r.fuelType}</span>
+                                    <span class="badge">${r.tankStatus}</span>
+                                    <div class="record-sub" style="color: #52b788; font-weight: bold;">${r.avg}</div>
+                                    <button class="btn-delete" onclick="deleteFuel(${r.id})">Excluir</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            // Atualiza Gráficos Básicos
+            const chartContainer = document.getElementById("chartContainer");
+            if(chartContainer) {
+                chartContainer.innerHTML = "";
+                if(activeFuelRecords.length === 0) {
+                    chartContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#444; font-size:13px;">Sem dados gráficos.</div>`;
+                } else {
+                    activeFuelRecords.forEach(r => {
+                        const width = Math.max(12, (r.value / maxValue) * 100);
+                        chartContainer.innerHTML += `
+                            <div class="chart-row">
+                                <div class="chart-label">${r.date}</div>
+                                <div class="chart-track">
+                                    <div class="chart-bar" style="width: ${width}%"></div>
+                                </div>
+                                <div class="chart-val">R$ ${r.value.toFixed(0)}</div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+        }
     </script>
 </body>
 </html>
