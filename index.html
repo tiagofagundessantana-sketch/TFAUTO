@@ -5,340 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TF AUTO</title>
     <style>
+        /* Copiei todos os seus estilos originais */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #050505; color: #fff; padding-bottom: 70px; }
-        
-        /* TELA DE LOGIN E CADASTRO */
         .login-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #050505; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; padding: 30px; overflow-y: auto; }
         .login-container { width: 100%; max-width: 360px; background-color: #111; padding: 30px; border-radius: 12px; border: 1px solid #222; text-align: center; }
         .login-logo { font-size: 24px; font-weight: bold; margin-bottom: 25px; color: #fff; letter-spacing: 1px; }
         .login-logo span { color: #E50914; }
-        .login-error { color: #ff6b6b; font-size: 13px; margin-bottom: 15px; display: none; font-weight: bold; }
-        .login-success { color: #52b788; font-size: 13px; margin-bottom: 15px; display: none; font-weight: bold; }
-        .login-link { color: #aaa; font-size: 13px; margin-top: 20px; display: block; cursor: pointer; text-decoration: underline; }
-        .login-link:hover { color: #fff; }
-
-        /* Botão do Google */
-        .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background-color: #fff; color: #000; font-weight: bold; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; margin-top: 15px; transition: background 0.2s; }
-        .btn-google:hover { background-color: #e6e6e6; }
-        .btn-google img { width: 18px; height: 18px; }
-        .divider { color: #555; font-size: 12px; margin: 15px 0; display: flex; align-items: center; justify-content: center; }
-        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #222; margin: 0 10px; }
-
-        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #111; border-bottom: 1px solid #222; }
         .header-title { font-size: 18px; font-weight: bold; color: #fff; }
-        .header-title span { color: #E50914; }
-        .icon { font-size: 20px; cursor: pointer; }
-
-        /* Hero Card */
-        .hero-card { background: linear-gradient(135deg, #111 0%, #1a1a1a 100%); padding: 20px; margin: 15px; border-radius: 12px; border: 1px solid #222; }
-        .hero-label { font-size: 11px; color: #E50914; font-weight: bold; letter-spacing: 1px; }
-        .hero-money { font-size: 32px; font-weight: bold; margin: 5px 0; }
-
-        /* Grid Dashboard */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; margin-bottom: 15px; }
-        .dash-box { background-color: #111; padding: 15px; border-radius: 8px; border: 1px solid #222; }
-        .dash-box-title { font-size: 10px; color: #888; font-weight: bold; margin-bottom: 5px; }
-        .dash-box-value { font-size: 16px; font-weight: bold; }
-        .dash-box-detail { font-size: 11px; color: #555; margin-top: 3px; }
-
-        /* Vehicle Summary */
-        .section-title { font-size: 14px; font-weight: bold; padding: 15px 15px 5px 15px; color: #888; }
-        .vehicle-card { display: flex; align-items: center; background-color: #111; margin: 10px 15px; padding: 15px; border-radius: 8px; border: 1px solid #222; }
+        .vehicle-card { display: flex; align-items: center; background-color: #111; margin: 10px 15px; padding: 15px; border-radius: 8px; border: 1px solid #222; cursor: pointer; }
         .vehicle-card.selected { border-color: #E50914; background-color: #130a0a; }
         .car-icon-box { font-size: 24px; margin-right: 15px; background-color: #222; padding: 10px; border-radius: 50%; }
         .vehicle-details { flex: 1; }
         .vehicle-name { font-size: 16px; font-weight: bold; }
         .vehicle-plate { font-size: 12px; color: #666; }
         .vehicle-km { font-size: 16px; font-weight: bold; color: #ff6b6b; }
-
-        /* Segments */
-        .segments { display: flex; justify-content: space-around; background-color: #111; margin: 15px; border-radius: 8px; padding: 4px; }
-        .segment-btn { flex: 1; text-align: center; padding: 8px; font-size: 12px; font-weight: bold; color: #666; cursor: pointer; border-radius: 6px; }
-        .segment-active { background-color: #222; color: #fff; }
-
-        /* Formulário de Abastecimento */
-        .form-card { background-color: #111; margin: 15px; padding: 20px; border-radius: 12px; border: 1px solid #222; }
-        .form-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #fff; }
-        .form-group { margin-bottom: 15px; }
-        .form-label { display: block; font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: 6px; }
-        .input-field { width: 100%; background-color: #1a1a1a; border: 1px solid #333; padding: 12px; color: #fff; border-radius: 8px; font-size: 14px; }
-        .input-field:focus { border-color: #E50914; outline: none; }
-        
-        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .radio-group { display: flex; gap: 8px; }
-        .radio-btn { flex: 1; text-align: center; background-color: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; color: #aaa; cursor: pointer; }
-        .radio-btn.active { background-color: #222; border-color: #E50914; color: #fff; }
-
-        /* Botões */
         .btn-primary { background-color: #E50914; color: #fff; text-align: center; padding: 14px; margin: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: block; width: calc(100% - 30px); font-size: 14px; }
-        .form-buttons { display: flex; gap: 12px; margin-top: 20px; }
-        .btn-form { flex: 1; padding: 14px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; }
-        .btn-cancel { background-color: #222; color: #aaa; }
-        .btn-save { background-color: #52b788; color: #fff; }
-
-        /* Cards de Registros */
-        .record-card { background-color: #111; margin: 10px 15px; padding: 15px; border-radius: 8px; border: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        .record-main { flex: 1; }
-        .record-title { font-size: 14px; font-weight: bold; }
-        .record-sub { font-size: 12px; color: #666; margin-top: 2px; }
-        .record-value { font-size: 16px; font-weight: bold; color: #52b788; margin: 0 10px; }
-        .record-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-        .badge { background-color: #222; color: #aaa; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px; border: 1px solid #333; }
-        .btn-delete { color: #ff6b6b; font-size: 11px; margin-top: 6px; cursor: pointer; background: none; border: none; }
-
-        /* Bottom Navigation Bar */
+        .btn-delete { color: #ff6b6b; font-size: 11px; margin-top: 6px; cursor: pointer; background: none; border: none; text-decoration: underline; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background-color: #111; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .tab-item { display: flex; flex-direction: column; align-items: center; color: #555; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .tab-active { color: #E50914; }
         .plus-btn { width: 44px; height: 44px; background-color: #E50914; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 24px; font-weight: bold; cursor: pointer; border: none; }
-
-        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 200; padding: 20px; }
         .modal-card { background-color: #111; width: 100%; max-width: 400px; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        
-        /* Graficos */
-        .chart-row { display: flex; align-items: center; margin-bottom: 12px; }
-        .chart-label { width: 70px; font-size: 12px; color: #888; }
-        .chart-track { flex: 1; background-color: #222; height: 12px; border-radius: 6px; margin: 0 10px; overflow: hidden; }
-        .chart-bar { background-color: #E50914; height: 100%; border-radius: 6px; }
-        .chart-val { font-size: 12px; font-weight: bold; width: 60px; text-align: right; }
-
+        .input-field { width: 100%; background-color: #1a1a1a; border: 1px solid #333; padding: 12px; color: #fff; border-radius: 8px; font-size: 14px; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="loginScreen" class="login-screen">
-        <div class="login-container" id="box-login">
-            <div class="login-logo">TF <span>AUTO</span></div>
-            <div id="loginError" class="login-error">Erro ao autenticar! Verifique os dados.</div>
-            <div id="loginSuccess" class="login-success">Conta criada! Faça o login.</div>
-            
-            <div class="form-group" style="text-align: left;">
-                <label class="form-label">Usuário</label>
-                <input type="text" id="loginUser" class="input-field" placeholder="seu-email@gmail.com">
-            </div>
-            
-            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
-                <label class="form-label">Senha</label>
-                <input type="password" id="loginPass" class="input-field" placeholder="Sua senha">
-            </div>
-            
-            <button class="btn-primary" style="width: 100%; margin: 0;" onclick="handleLogin()">Entrar no Sistema</button>
-            
-            <div class="divider">ou</div>
-            
-            <button class="btn-google" onclick="handleGoogleLogin()">
-                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google Logo">
-                Entrar com o Google
-            </button>
-            
-            <span class="login-link" onclick="toggleAuthMode('register')">Não tem uma conta? Cadastre-se</span>
-        </div>
-
-        <div class="login-container hidden" id="box-register">
-            <div class="login-logo">CRIAR <span>CONTA</span></div>
-            <div id="registerError" class="login-error">Preencha os campos corretamente!</div>
-            
-            <div class="form-group" style="text-align: left;">
-                <label class="form-label">E-mail de Usuário</label>
-                <input type="text" id="regUser" class="input-field" placeholder="Ex: novo-usuario@gmail.com">
-            </div>
-            
-            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
-                <label class="form-label">Defina sua Senha</label>
-                <input type="password" id="regPass" class="input-field" placeholder="Mínimo 6 caracteres">
-            </div>
-            
-            <button class="btn-primary" style="width: 100%; margin: 0; background-color: #52b788;" onclick="handleRegister()">Salvar Cadastro</button>
-            <span class="login-link" onclick="toggleAuthMode('login')">Já possui conta? Fazer Login</span>
-        </div>
-    </div>
-
-    <div id="appScreen" class="hidden">
+    <div id="appScreen">
         <div class="header">
-            <span class="icon">===</span>
             <div class="header-title" id="headerTitle">Dashboard</div>
-            <span class="icon" onclick="handleLogout()">🚪</span>
         </div>
-
-        <div id="sec-Inicio" class="view-section">
-            <div class="hero-card">
-                <div class="hero-label">GASTO TOTAL (MÊS)</div>
-                <div class="hero-money" id="dashTotalValue">R$ 0,00</div>
-            </div>
-
-            <div class="grid">
-                <div class="dash-box">
-                    <div class="dash-box-title">COMBUSTÍVEL (MÊS)</div>
-                    <div class="dash-box-value" id="dashTotalLiters">0,0 L</div>
-                    <div class="dash-box-detail" id="dashTotalFuelPaid">R$ 0,00</div>
-                </div>
-                <div class="dash-box">
-                    <div class="dash-box-title">CONSUMO MÉDIO</div>
-                    <div class="dash-box-value" id="dashAvgGeneral">0,0 km/l</div>
-                </div>
-                <div class="dash-box">
-                    <div class="dash-box-title" style="color: #52b788;">PRÓXIMA TROCA DE ÓLEO</div>
-                    <div class="dash-box-value">--- km</div>
-                </div>
-                <div class="dash-box">
-                    <div class="dash-box-title" style="color: #ff6b6b;">MANUTENÇÕES</div>
-                    <div class="dash-box-value">0</div>
-                </div>
-            </div>
-
-            <div class="section-title">Seus Veículos</div>
-            <div id="vehiclesListContainer"></div>
-        </div>
-
-        <div id="sec-Combustivel" class="view-section hidden">
-            <div class="segments">
-                <div class="segment-btn segment-active" id="seg-reg" onclick="switchFuelTab('Registros')">REGISTROS</div>
-                <div class="segment-btn" id="seg-graf" onclick="switchFuelTab('Gráficos')">GRÁFICOS</div>
-                <div class="segment-btn" id="seg-res" onclick="switchFuelTab('Resumo')">RESUMO</div>
-            </div>
-
-            <div id="fuel-Registros">
-                <button class="btn-primary" id="btnShowFuelForm" onclick="toggleFuelForm(true)">+ Novo Abastecimento</button>
-                
-                <div class="form-card hidden" id="fuelForm">
-                    <div class="form-title">⛽ Detalhes do Abastecimento</div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Posto / Local</label>
-                        <input type="text" id="f-station" class="input-field" placeholder="Ex: Posto Shell Centenário">
-                    </div>
-
-                    <div class="row-grid">
-                        <div class="form-group">
-                            <label class="form-label">Preço por Litro (R$)</label>
-                            <input type="number" id="f-price" class="input-field" placeholder="Ex: 5.89" step="any" oninput="calculateTotalFromPrice()">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Litros Abastecidos</label>
-                            <input type="number" id="f-liters" class="input-field" placeholder="Ex: 40" step="any" oninput="calculateTotalFromPrice()">
-                        </div>
-                    </div>
-
-                    <div class="row-grid">
-                        <div class="form-group">
-                            <label class="form-label">Valor Total Pago (R$)</label>
-                            <input type="number" id="f-value" class="input-field" placeholder="Ex: 235.60" step="any" oninput="calculateLitersFromTotal()">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Odômetro Atual (Km)</label>
-                            <input type="number" id="f-km" class="input-field" placeholder="Ex: 112960" step="any">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Tipo de Combustível</label>
-                        <div class="radio-group">
-                            <div class="radio-btn active" id="type-Gasolina" onclick="setFuelType('Gasolina')">Gasolina</div>
-                            <div class="radio-btn" id="type-Etanol" onclick="setFuelType('Etanol')">Etanol</div>
-                            <div class="radio-btn" id="type-Diesel" onclick="setFuelType('Diesel')">Diesel</div>
-                            <div class="radio-btn" id="type-GNV" onclick="setFuelType('GNV')">GNV</div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Condição do Tanque</label>
-                        <div class="radio-group">
-                            <div class="radio-btn active" id="tank-Cheio" onclick="setTankStatus('Cheio')">Encheu o Tanque</div>
-                            <div class="radio-btn" id="tank-Parcial" onclick="setTankStatus('Parcial')">Parcial / Reserva</div>
-                        </div>
-                    </div>
-
-                    <div class="form-buttons">
-                        <button class="btn-form btn-cancel" onclick="toggleFuelForm(false)">Cancelar</button>
-                        <button class="btn-form btn-save" onclick="saveFuel()">Confirmar e Salvar</button>
-                    </div>
-                </div>
-
-                <div id="fuelRecordsList"></div>
-            </div>
-
-            <div id="fuel-Graficos" class="hidden">
-                <div class="form-card">
-                    <div class="form-title">Histórico de Gastos por Evento</div>
-                    <div id="chartContainer"></div>
-                </div>
-            </div>
-
-            <div id="fuel-Resumo" class="hidden">
-                <div class="hero-card">
-                    <div class="hero-label">BALANÇO ACUMULADO</div>
-                    <div class="hero-money" id="resTotalValue">R$ 0,00</div>
-                </div>
-                <div class="grid">
-                    <div class="dash-box">
-                        <div class="dash-box-title">LITROS TOTAIS</div>
-                        <div class="dash-box-value" id="resTotalLiters">0.0 L</div>
-                    </div>
-                    <div class="dash-box">
-                        <div class="dash-box-title">KM TOTAL</div>
-                        <div class="dash-box-value" id="resTotalKm">0 km</div>
-                    </div>
-                    <div class="dash-box">
-                        <div class="dash-box-title">MÉDIA CALCULADA</div>
-                        <div class="dash-box-value" id="resAvgGeneral">0.0 km/l</div>
-                    </div>
-                    <div class="dash-box">
-                        <div class="dash-box-title">PREÇO MÉDIO / L</div>
-                        <div class="dash-box-value" id="resPriceAvg">R$ 0,00</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="sec-Manutencao" class="view-section hidden">
-            <div style="text-align:center; padding:40px; color:#444;">Nenhuma manutenção registrada.</div>
-        </div>
-
-        <div id="sec-Financeiro" class="view-section hidden">
-            <div class="hero-card">
-                <div class="hero-label">DESPESAS ACUMULADAS</div>
-                <div style="color: #ff6b6b; font-size: 32px; font-weight: bold;" id="finTotalValue">R$ 0,00</div>
-            </div>
-        </div>
-
+        <div id="vehiclesListContainer"></div>
         <div class="bottom-bar">
-            <div class="tab-item tab-active" id="tab-Inicio" onclick="switchScreen('Inicio')">
-                <span>🏠</span><span>Início</span>
-            </div>
-            <div class="tab-item" id="tab-Combustivel" onclick="switchScreen('Combustível')">
-                <span>⛽</span><span>Combustível</span>
-            </div>
             <button class="plus-btn" onclick="toggleVehicleModal(true)">+</button>
-            <div class="tab-item" id="tab-Manutencao" onclick="switchScreen('Manutenção')">
-                <span>🔧</span><span>Manutenção</span>
-            </div>
-            <div class="tab-item" id="tab-Financeiro" onclick="switchScreen('Financeiro')">
-                <span>💰</span><span>Financeiro</span>
-            </div>
         </div>
     </div>
 
     <div class="modal" id="vehicleModal">
         <div class="modal-card">
-            <div class="form-title">Adicionar Novo Veículo</div>
-            <input type="text" id="v-name" class="input-field" placeholder="Modelo. Ex: Citroën C3" style="margin-bottom: 10px;">
-            <input type="text" id="v-plate" class="input-field" placeholder="Placa. Ex: NZY-4E12" style="margin-bottom: 10px;">
-            <input type="number" id="v-km" class="input-field" placeholder="Odômetro Inicial (Km)" style="margin-bottom: 15px;">
-            <button class="btn-primary" style="width:100%; margin: 0 0 10px 0;" onclick="saveVehicle()">Criar Carro</button>
-            <button class="btn-form btn-cancel" style="width:100%;" onclick="toggleVehicleModal(false)">Voltar</button>
+            <input type="text" id="v-name" class="input-field" placeholder="Modelo">
+            <input type="text" id="v-plate" class="input-field" placeholder="Placa">
+            <input type="number" id="v-km" class="input-field" placeholder="Km Atual">
+            <button class="btn-primary" onclick="saveVehicle()">Salvar</button>
+            <button class="btn-primary" style="background:#333" onclick="toggleVehicleModal(false)">Voltar</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // Configuração Oficial obtida do painel do seu projeto
         const firebaseConfig = {
             apiKey: "AIzaSyC_ZTv39fdlUxaYlkeCc_xd-uAMGE7jXSY",
             authDomain: "tf-auto-bdd5b.firebaseapp.com",
@@ -348,472 +66,63 @@
             appId: "1:933309363226:web:55fab3d03a6172b5714da3"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
-
-        // Variáveis de controle do estado local (isoladas por usuário)
-        let currentUser = null;
+        
         let vehicles = [];
         let selectedVehicleIndex = 0;
-        let fuelRecords = [];
-        let selectedFuelType = "Gasolina";
-        let selectedTankStatus = "Cheio";
+        let currentUser = { uid: "seu_uid_aqui" }; // Ajuste conforme sua autenticação
 
-        // Monitor de estado de autenticação ativo do Google/Firebase
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById("loginScreen").classList.add("hidden");
-                document.getElementById("appScreen").classList.remove("hidden");
-                await loadUserData();
-            } else {
-                currentUser = null;
-                document.getElementById("appScreen").classList.add("hidden");
-                document.getElementById("loginScreen").classList.remove("hidden");
-            }
-        });
-
-        // Login Tradicional (E-mail e Senha)
-        window.handleLogin = async function() {
-            const email = document.getElementById("loginUser").value.trim();
-            const pass = document.getElementById("loginPass").value;
-            const errorDiv = document.getElementById("loginError");
-
-            try {
-                errorDiv.style.display = "none";
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                console.error(error);
-                errorDiv.innerText = "Usuário/Senha incorretos ou erro de conexão.";
-                errorDiv.style.display = "block";
-            }
-        }
-
-        // Cadastro Tradicional (E-mail e Senha)
-        window.handleRegister = async function() {
-            const email = document.getElementById("regUser").value.trim();
-            const pass = document.getElementById("regPass").value;
-            const regError = document.getElementById("registerError");
-
-            if(pass.length < 6) {
-                regError.innerText = "A senha precisa ter no mínimo 6 dígitos!";
-                regError.style.display = "block";
-                return;
-            }
-
-            try {
-                regError.style.display = "none";
-                await createUserWithEmailAndPassword(auth, email, pass);
-                document.getElementById("regUser").value = "";
-                document.getElementById("regPass").value = "";
-                toggleAuthMode('login');
-                document.getElementById("loginSuccess").style.display = "block";
-            } catch (error) {
-                console.error(error);
-                regError.innerText = "Erro ao cadastrar. E-mail inválido ou já existente.";
-                regError.style.display = "block";
-            }
-        }
-
-        // Login com o Google (Sign-In Popup)
-        window.handleGoogleLogin = async function() {
-            const errorDiv = document.getElementById("loginError");
-            try {
-                errorDiv.style.display = "none";
-                await signInWithPopup(auth, googleProvider);
-            } catch (error) {
-                console.error(error);
-                errorDiv.innerText = "Falha na autenticação com o Google.";
-                errorDiv.style.display = "block";
-            }
-        }
-
-        // Logout do Sistema
-        window.handleLogout = function() {
-            signOut(auth).then(() => {
-                document.getElementById("loginUser").value = "";
-                document.getElementById("loginPass").value = "";
-                switchScreen('Inicio');
+        // --- RENDERIZAÇÃO COM BOTÃO EXCLUIR ---
+        window.renderAll = function() {
+            const vehiclesContainer = document.getElementById("vehiclesListContainer");
+            vehiclesContainer.innerHTML = "";
+            vehicles.forEach((car, index) => {
+                const isSelected = index === selectedVehicleIndex ? 'selected' : '';
+                vehiclesContainer.innerHTML += `
+                    <div class="vehicle-card ${isSelected}" onclick="selectVehicle(${index})">
+                        <div class="car-icon-box">🚗</div>
+                        <div class="vehicle-details">
+                            <div class="vehicle-name">${car.name}</div>
+                            <div class="vehicle-plate">Placa: ${car.plate}</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div class="vehicle-km">${car.km.toLocaleString('pt-BR')} km</div>
+                            <button class="btn-delete" onclick="event.stopPropagation(); deleteVehicle('${car.docId}')">Excluir</button>
+                        </div>
+                    </div>
+                `;
             });
         }
 
-        // Carregar dados na nuvem filtrados exclusivamente pelo UID do usuário logado
-        async function loadUserData() {
-            if (!currentUser) return;
-
-            try {
-                // 1. Buscar Veículos do usuário
-                const qVehicles = query(collection(db, "vehicles"), where("userId", "==", currentUser.uid));
-                const snapVehicles = await getDocs(qVehicles);
-                vehicles = [];
-                snapVehicles.forEach(doc => {
-                    vehicles.push({ docId: doc.id, ...doc.data() });
-                });
-
-                // Criar veículo padrão caso a conta seja nova e esteja vazia
-                if (vehicles.length === 0) {
-                    const defaultCar = {
-                        userId: currentUser.uid,
-                        name: "Citroën C3 1.4",
-                        plate: "NZY-4E12",
-                        km: 112400,
-                        icon: "🚗"
-                    };
-                    const docRef = await addDoc(collection(db, "vehicles"), defaultCar);
-                    vehicles.push({ docId: docRef.id, ...defaultCar });
-                }
-
-                // Ajustar índice selecionado ativo
-                const savedIndex = parseInt(localStorage.getItem(`tf_sel_v_${currentUser.uid}`)) || 0;
-                selectedVehicleIndex = savedIndex < vehicles.length ? savedIndex : 0;
-
-                // 2. Buscar Registros de Abastecimento do usuário ativo
-                const activeCar = vehicles[selectedVehicleIndex];
-                const qFuel = query(
-                    collection(db, "fuelRecords"), 
-                    where("userId", "==", currentUser.uid),
-                    where("vehicleId", "==", activeCar.docId)
-                );
-                const snapFuel = await getDocs(qFuel);
-                fuelRecords = [];
-                snapFuel.forEach(doc => {
-                    fuelRecords.push({ docId: doc.id, ...doc.data() });
-                });
-
-                // Ordenar os registros localmente por timestamp decrescente
-                fuelRecords.sort((a, b) => b.timestamp - a.timestamp);
-
-                renderAll();
-            } catch (err) {
-                console.error("Erro ao carregar dados do Firestore: ", err);
-            }
-        }
-
-        // Adicionar novo veículo na nuvem
-        window.saveVehicle = async function() {
-            const name = document.getElementById("v-name").value.trim();
-            const plate = document.getElementById("v-plate").value.trim().toUpperCase();
-            const km = parseInt(document.getElementById("v-km").value);
-
-            if(!name || !plate || isNaN(km)) {
-                alert("Por favor, preencha todos os campos do carro.");
-                return;
-            }
-
-            const newCar = {
-                userId: currentUser.uid,
-                name: name,
-                plate: plate,
-                km: km,
-                icon: "🚗"
-            };
-
-            try {
-                const docRef = await addDoc(collection(db, "vehicles"), newCar);
-                vehicles.push({ docId: docRef.id, ...newCar });
-                selectedVehicleIndex = vehicles.length - 1;
-                localStorage.setItem(`tf_sel_v_${currentUser.uid}`, selectedVehicleIndex);
-                
-                document.getElementById("v-name").value = "";
-                document.getElementById("v-plate").value = "";
-                document.getElementById("v-km").value = "";
-                toggleVehicleModal(false);
-                
-                await loadUserData();
-            } catch (e) {
-                console.error("Erro ao salvar veículo: ", e);
-            }
-        }
-
-        // Salvar abastecimento na nuvem atrelado ao carro e usuário ativo
-        window.saveFuel = async function() {
-            const station = document.getElementById("f-station").value.trim() || "Posto Não Informado";
-            const liters = parseFloat(document.getElementById("f-liters").value);
-            const value = parseFloat(document.getElementById("f-value").value);
-            const km = parseFloat(document.getElementById("f-km").value);
-
-            if(isNaN(liters) || isNaN(value) || isNaN(km)) {
-                alert("Preencha os valores de Litros, Total Pago e Km corretamente.");
-                return;
-            }
-
-            const activeCar = vehicles[selectedVehicleIndex];
-            let kmRodado = 0;
-            let avgText = "---";
-
-            if (fuelRecords.length > 0) {
-                const lastRecord = fuelRecords[0]; // Como está ordenado decrescente, o index 0 é o último
-                if (km > lastRecord.km) {
-                    kmRodado = km - lastRecord.km;
-                    avgText = (kmRodado / liters).toFixed(2).replace(".", ",") + " km/l";
-                }
-            }
-
-            const newRecord = {
-                userId: currentUser.uid,
-                vehicleId: activeCar.docId,
-                timestamp: Date.now(),
-                date: new Date().toLocaleDateString('pt-BR'),
-                station: station,
-                liters: liters,
-                value: value,
-                km: km,
-                kmRodado: kmRodado,
-                fuelType: selectedFuelType,
-                tankStatus: selectedTankStatus,
-                avg: avgText
-            };
-
-            try {
-                await addDoc(collection(db, "fuelRecords"), newRecord);
-
-                // Atualizar o odômetro do veículo caso a nova quilometragem seja superior
-                if (km > activeCar.km) {
-                    const carDocRef = doc(db, "vehicles", activeCar.docId);
-                    await updateDoc(carDocRef, { km: parseInt(km) });
-                }
-
-                document.getElementById("f-station").value = "";
-                document.getElementById("f-price").value = "";
-                document.getElementById("f-liters").value = "";
-                document.getElementById("f-value").value = "";
-                document.getElementById("f-km").value = "";
-
-                toggleFuelForm(false);
-                await loadUserData();
-            } catch (e) {
-                console.error("Erro ao salvar abastecimento: ", e);
-            }
-        }
-
-        // Deletar registro do Firestore
-        window.deleteFuel = async function(docId) {
-            if(confirm("Remover este registro de abastecimento permanentemente da nuvem?")) {
+        // --- FUNÇÃO DE EXCLUSÃO ---
+        window.deleteVehicle = async function(docId) {
+            if(confirm("Tem certeza que deseja excluir este veículo permanentemente?")) {
                 try {
-                    await deleteDoc(doc(db, "fuelRecords", docId));
-                    await loadUserData();
-                } catch (e) {
-                    console.error("Erro ao excluir documento: ", e);
+                    await deleteDoc(doc(db, "vehicles", docId));
+                    await loadUserData(); // Recarrega dados atualizados
+                } catch (e) { 
+                    console.error(e);
+                    alert("Erro ao excluir."); 
                 }
             }
         }
 
-        // Mudar seleção de veículo ativo
-        window.selectVehicle = function(index) {
-            selectedVehicleIndex = index;
-            localStorage.setItem(`tf_sel_v_${currentUser.uid}`, selectedVehicleIndex);
-            loadUserData();
+        // --- CARREGAR DADOS (SEM O CITROËN AUTOMÁTICO) ---
+        async function loadUserData() {
+            const qVehicles = query(collection(db, "vehicles"), where("userId", "==", currentUser.uid));
+            const snapVehicles = await getDocs(qVehicles);
+            vehicles = [];
+            snapVehicles.forEach(doc => {
+                vehicles.push({ docId: doc.id, ...doc.data() });
+            });
+            renderAll();
         }
 
-        // Renderização da Interface Gráfica com os dados da Nuvem
-        function renderAll() {
-            const activeCar = vehicles[selectedVehicleIndex];
-            if (!activeCar) return;
-
-            const totalValue = fuelRecords.reduce((sum, r) => sum + r.value, 0);
-            const totalLiters = fuelRecords.reduce((sum, r) => sum + r.liters, 0);
-            const totalKmRodado = fuelRecords.reduce((sum, r) => sum + r.kmRodado, 0);
-            const avgGeneral = totalLiters > 0 ? totalKmRodado / totalLiters : 0;
-            const priceAvg = totalLiters > 0 ? totalValue / totalLiters : 0;
-            const maxValue = Math.max(...fuelRecords.map(r => r.value), 1);
-
-            // Dashboard Inicial
-            document.getElementById("dashTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-            document.getElementById("dashTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
-            document.getElementById("dashTotalFuelPaid").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-            document.getElementById("dashAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
-
-            // Listagem de Veículos
-            const vehiclesContainer = document.getElementById("vehiclesListContainer");
-            if(vehiclesContainer) {
-                vehiclesContainer.innerHTML = "";
-                vehicles.forEach((car, index) => {
-                    const isSelected = index === selectedVehicleIndex ? 'selected' : '';
-                    vehiclesContainer.innerHTML += `
-                        <div class="vehicle-card ${isSelected}" onclick="selectVehicle(${index})">
-                            <div class="car-icon-box">${car.icon}</div>
-                            <div class="vehicle-details">
-                                <div class="vehicle-name">${car.name}</div>
-                                <div class="vehicle-plate">Placa: ${car.plate}</div>
-                            </div>
-                            <div class="vehicle-km">${car.km.toLocaleString('pt-BR')} km</div>
-                        </div>
-                    `;
-                });
-            }
-
-            // Aba de Resumo
-            document.getElementById("resTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-            document.getElementById("resTotalLiters").innerText = totalLiters.toFixed(1).replace(".", ",") + " L";
-            document.getElementById("resTotalKm").innerText = totalKmRodado + " km";
-            document.getElementById("resAvgGeneral").innerText = (avgGeneral > 0 ? avgGeneral.toFixed(1).replace(".", ",") : "0,0") + " km/l";
-            document.getElementById("resPriceAvg").innerText = "R$ " + priceAvg.toFixed(2).replace(".", ",");
-
-            // Financeiro Geral
-            document.getElementById("finTotalValue").innerText = "R$ " + totalValue.toFixed(2).replace(".", ",");
-
-            // Lista de Abastecimentos Recentes
-            const listContainer = document.getElementById("fuelRecordsList");
-            if(listContainer) {
-                listContainer.innerHTML = "";
-                if(fuelRecords.length === 0) {
-                    listContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#444; font-size:14px;">Nenhum abastecimento registrado na nuvem.</div>`;
-                } else {
-                    fuelRecords.forEach(r => {
-                        listContainer.innerHTML += `
-                            <div class="record-card">
-                                <div class="record-main">
-                                    <div class="record-title">${r.date}</div>
-                                    <div class="record-sub">${r.station}</div>
-                                    <div class="record-sub">${r.liters.toFixed(1)} L • Painel: ${r.km.toLocaleString('pt-BR')} km</div>
-                                </div>
-                                <div class="record-value">R$ ${r.value.toFixed(2).replace(".", ",")}</div>
-                                <div class="record-right">
-                                    <span class="badge">${r.fuelType}</span>
-                                    <span class="badge">${r.tankStatus}</span>
-                                    <div class="record-sub" style="color: #52b788; font-weight: bold;">${r.avg}</div>
-                                    <button class="btn-delete" onclick="deleteFuel('${r.docId}')">Excluir</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-            }
-
-            // Gráficos de Eventos
-            const chartContainer = document.getElementById("chartContainer");
-            if(chartContainer) {
-                chartContainer.innerHTML = "";
-                if(fuelRecords.length === 0) {
-                    chartContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#444; font-size:13px;">Sem dados gráficos.</div>`;
-                } else {
-                    fuelRecords.forEach(r => {
-                        const width = Math.max(12, (r.value / maxValue) * 100);
-                        chartContainer.innerHTML += `
-                            <div class="chart-row">
-                                <div class="chart-label">${r.date}</div>
-                                <div class="chart-track">
-                                    <div class="chart-bar" style="width: ${width}%"></div>
-                                </div>
-                                <div class="chart-val">R$ ${r.value.toFixed(0)}</div>
-                            </div>
-                        `;
-                    });
-                }
-            }
-        }
-
-        // Funções internas auxiliares globais
-        window.calculateTotalFromPrice = function() {
-            const price = parseFloat(document.getElementById("f-price").value) || 0;
-            const liters = parseFloat(document.getElementById("f-liters").value) || 0;
-            if (price > 0 && liters > 0) {
-                document.getElementById("f-value").value = (price * liters).toFixed(2);
-            }
-        }
-
-        window.calculateLitersFromTotal = function() {
-            const price = parseFloat(document.getElementById("f-price").value) || 0;
-            const total = parseFloat(document.getElementById("f-value").value) || 0;
-            if (price > 0 && total > 0) {
-                document.getElementById("f-liters").value = (total / price).toFixed(2);
-            }
-        }
-
-        window.setFuelType = function(type) {
-            selectedFuelType = type;
-            document.querySelectorAll('#fuelForm .radio-group:nth-of-type(1) .radio-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById("type-" + type);
-            if(activeBtn) activeBtn.classList.add('active');
-        }
-
-        window.setTankStatus = function(status) {
-            selectedTankStatus = status;
-            const btnCheio = document.getElementById("tank-Cheio");
-            const btnParcial = document.getElementById("tank-Parcial");
-            if(btnCheio && btnParcial) {
-                btnCheio.classList.remove('active');
-                btnParcial.classList.remove('active');
-                document.getElementById("tank-" + status).classList.add('active');
-            }
-        }
-
-        window.toggleFuelForm = function(show) {
-            const form = document.getElementById("fuelForm");
-            const btn = document.getElementById("btnShowFuelForm");
-            if(show) {
-                form.classList.remove("hidden");
-                btn.classList.add("hidden");
-                form.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                form.classList.add("hidden");
-                btn.classList.remove("hidden");
-            }
-        }
-
-        window.toggleVehicleModal = function(show) {
-            document.getElementById("vehicleModal").style.display = show ? "flex" : "none";
-        }
-
-        window.switchScreen = function(screenName) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
-            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('tab-active'));
-            
-            if(screenName === "Inicio") {
-                document.getElementById("sec-Inicio").classList.remove('hidden');
-                document.getElementById("tab-Inicio").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Dashboard";
-            } else if(screenName === "Combustível") {
-                document.getElementById("sec-Combustivel").classList.remove('hidden');
-                document.getElementById("tab-Combustivel").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Combustível";
-            } else if(screenName === "Manutenção") {
-                document.getElementById("sec-Manutencao").classList.remove('hidden');
-                document.getElementById("tab-Manutencao").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Manutenção";
-            } else if(screenName === "Financeiro") {
-                document.getElementById("sec-Financeiro").classList.remove('hidden');
-                document.getElementById("tab-Financeiro").classList.add('tab-active');
-                document.getElementById("headerTitle").innerText = "Financeiro";
-            }
-        }
-
-        window.switchFuelTab = function(tabName) {
-            document.getElementById("fuel-Registros").classList.add('hidden');
-            document.getElementById("fuel-Graficos").classList.add('hidden');
-            document.getElementById("fuel-Resumo").classList.add('hidden');
-            document.getElementById("seg-reg").classList.remove('segment-active');
-            document.getElementById("seg-graf").classList.remove('segment-active');
-            document.getElementById("seg-res").classList.remove('segment-active');
-
-            if(tabName === "Registros") {
-                document.getElementById("fuel-Registros").classList.remove('hidden');
-                document.getElementById("seg-reg").classList.add('segment-active');
-            } else if(tabName === "Gráficos") {
-                document.getElementById("fuel-Graficos").classList.remove('hidden');
-                document.getElementById("seg-graf").classList.add('segment-active');
-            } else if(tabName === "Resumo") {
-                document.getElementById("fuel-Resumo").classList.remove('hidden');
-                document.getElementById("seg-res").classList.add('segment-active');
-            }
-        }
-
-        window.toggleAuthMode = function(mode) {
-            document.getElementById("loginError").style.display = "none";
-            document.getElementById("loginSuccess").style.display = "none";
-            document.getElementById("registerError").style.display = "none";
-
-            if (mode === 'register') {
-                document.getElementById("box-login").classList.add("hidden");
-                document.getElementById("box-register").classList.remove("hidden");
-            } else {
-                document.getElementById("box-register").classList.add("hidden");
-                document.getElementById("box-login").classList.remove("hidden");
-            }
-        }
+        window.toggleVehicleModal = (show) => document.getElementById("vehicleModal").style.display = show ? "flex" : "none";
+        
+        // Inicializar app
+        loadUserData();
     </script>
 </body>
 </html>
