@@ -104,19 +104,6 @@
         .chart-track { flex: 1; background-color: #222; height: 12px; border-radius: 6px; margin: 0 10px; overflow: hidden; }
         .chart-bar { background-color: #E50914; height: 100%; border-radius: 6px; }
         .chart-val { font-size: 12px; font-weight: bold; width: 60px; text-align: right; }
-// NOVA FUNÇÃO DE EXCLUSÃO
-        window.deleteVehicle = async function(docId) {
-            if (vehicles.length <= 1) {
-                alert("Você não pode excluir o único veículo cadastrado.");
-                return;
-            }
-            if (confirm("Tem certeza que deseja excluir este veículo?")) {
-                try {
-                    await deleteDoc(doc(db, "vehicles", docId));
-                    selectedVehicleIndex = 0;
-                    await loadUserData(); // Recarrega a lista
-                } catch (e) {
-                    alert("Erro ao excluir");
 
         .hidden { display: none !important; }
     </style>
