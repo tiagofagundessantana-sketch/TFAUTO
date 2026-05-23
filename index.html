@@ -18,10 +18,12 @@
         .login-link { color: #aaa; font-size: 13px; margin-top: 20px; display: block; cursor: pointer; text-decoration: underline; }
         .login-link:hover { color: #fff; }
 
-        <button class="btn-google" onclick="handleGoogleLogin()">
-    <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google">
-    Entrar com o Google
-</button>
+        /* Botão do Google */
+        .btn-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background-color: #fff; color: #000; font-weight: bold; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; margin-top: 15px; transition: background 0.2s; }
+        .btn-google:hover { background-color: #e6e6e6; }
+        .btn-google img { width: 18px; height: 18px; }
+        .divider { color: #555; font-size: 12px; margin: 15px 0; display: flex; align-items: center; justify-content: center; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #222; margin: 0 10px; }
 
         /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #111; border-bottom: 1px solid #222; }
